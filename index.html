@@ -1,470 +1,721 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Jessie Roi Bautista — VA, Player Support & Team Management</title>
+  <title>Clock In Service</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg:      #0d0f14;
-      --surface: #141720;
-      --border:  #1f2330;
-      --accent:  #4f8cff;
-      --accent2: #a78bfa;
-      --text:    #e8eaf0;
-      --muted:   #7a7f94;
-      --tag-bg:  #1a1f2e;
+      --bg: #0d0f14; --surface: #141720; --surface2: #1a1f2e;
+      --border: #1f2330; --accent: #4f8cff; --accent2: #a78bfa;
+      --green: #22c55e; --red: #ef4444; --yellow: #f59e0b;
+      --text: #e8eaf0; --muted: #7a7f94; --tag-bg: #1a1f2e;
     }
-    html { scroll-behavior: smooth; }
+    html, body { height: 100%; }
     body {
       background: var(--bg); color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      font-size: 16px; line-height: 1.6; overflow-x: hidden;
+      font-size: 15px; line-height: 1.6;
     }
-
-    /* NAV */
-    nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 1rem 2.5rem;
-      background: rgba(13,15,20,0.95); border-bottom: 1px solid var(--border);
+    #login-screen {
+      min-height: 100vh; display: flex;
+      align-items: center; justify-content: center; padding: 2rem;
     }
-    .nav-logo { font-family: monospace; font-size: 0.9rem; color: var(--accent); }
-    .nav-links { display: flex; gap: 2rem; }
-    .nav-links a { font-size: 0.85rem; color: var(--muted); text-decoration: none; }
-    .nav-links a:hover { color: var(--text); }
-
-    /* HERO */
-    .hero { min-height: 100vh; display: flex; align-items: center; padding: 7rem 2rem 4rem; }
-    .hero-inner { max-width: 760px; margin: 0 auto; width: 100%; }
-    .hero-eyebrow {
+    .login-card {
+      width: 100%; max-width: 420px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 2.5rem;
+    }
+    .login-logo {
       font-family: monospace; font-size: 0.78rem; color: var(--accent);
-      letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 1.25rem;
-    }
-    h1 {
-      font-size: clamp(2.4rem, 6vw, 4rem); font-weight: 700;
-      line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 1.25rem;
-    }
-    h1 span { color: var(--accent); }
-    .hero-sub { font-size: 1rem; color: var(--muted); max-width: 560px; margin-bottom: 2.5rem; line-height: 1.75; }
-    .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
-    .btn {
-      display: inline-block; padding: 0.75rem 1.75rem;
-      border-radius: 6px; font-size: 0.9rem; font-weight: 600;
-      text-decoration: none; border: none; font-family: inherit; cursor: pointer;
-    }
-    .btn-primary { background: var(--accent); color: #fff; }
-    .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
-    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
-
-    /* SECTIONS */
-    section { padding: 5rem 2rem; }
-    .container { max-width: 900px; margin: 0 auto; }
-    .section-label {
-      font-family: monospace; font-size: 0.75rem; color: var(--accent);
       letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.5rem;
     }
-    h2 { font-size: clamp(1.6rem, 3.5vw, 2.1rem); font-weight: 700; margin-bottom: 2.5rem; letter-spacing: -0.02em; }
-
-    /* SKILLS */
-    #skills { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-    .skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 1.25rem; }
-    .skill-card {
-      padding: 1.5rem; background: var(--bg); border: 1px solid var(--border);
-      border-radius: 10px; transition: border-color 0.2s, transform 0.3s, opacity 0.3s;
+    .login-card h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .login-card .sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 2rem; }
+    .field { margin-bottom: 1rem; }
+    .field label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 0.35rem; }
+    .field input {
+      width: 100%; padding: 0.65rem 0.9rem;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); font-size: 0.9rem; font-family: inherit; outline: none;
     }
-    .skill-card:hover { border-color: var(--accent); }
-    .skill-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
-    .skill-card h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.4rem; }
-    .skill-card p { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
-
-    /* EXPERIENCE (space theme) */
-    #experience {
-      position: relative;
-      background: radial-gradient(ellipse at 50% 0%, #0d1220 0%, var(--bg) 70%);
+    .field input:focus { border-color: var(--accent); }
+    .login-btn {
+      width: 100%; padding: 0.75rem; background: var(--accent); color: #fff;
+      border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600;
+      font-family: inherit; cursor: pointer; margin-top: 0.5rem;
     }
-    .stars-canvas { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
-    .exp-inner { position: relative; z-index: 1; }
-
-    .timeline { position: relative; padding-left: 3rem; }
-    .timeline::before {
-      content: ''; position: absolute; left: 0; top: 8px; bottom: 8px;
-      width: 1px; background: linear-gradient(to bottom, var(--accent), var(--accent2), var(--muted));
+    .login-btn:hover { opacity: 0.9; }
+    .login-error { color: var(--red); font-size: 0.82rem; margin-top: 0.6rem; display: none; }
+    .creds-box {
+      margin-top: 1.5rem; padding: 1rem;
+      background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
     }
-    .timeline-item { position: relative; margin-bottom: 2.5rem; }
-    .timeline-item::before {
-      content: ''; position: absolute; left: -1.57rem; top: 6px;
-      width: 8px; height: 8px; border-radius: 50%;
-      background: var(--accent); box-shadow: 0 0 0 3px var(--bg), 0 0 8px var(--accent);
+    .creds-title {
+      font-family: monospace; font-size: 0.68rem; color: var(--accent2);
+      letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.75rem;
     }
-    .tl-meta { font-family: monospace; font-size: 0.75rem; color: var(--accent2); margin-bottom: 0.3rem; }
-    .tl-company { font-size: 0.8rem; color: var(--muted); margin-bottom: 0.25rem; }
-    .tl-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.35rem; }
-    .tl-desc { font-size: 0.88rem; color: var(--muted); }
-
-    /* ROCKET */
-    .timeline-wrap { position: relative; }
-    #rocket-wrap {
-      position: absolute; left: 0; top: 0;
-      transform: translateX(-50%);
-      z-index: 20; pointer-events: none;
-      will-change: top;
-      filter: drop-shadow(0 0 6px rgba(79,140,255,0.5));
+    .cred-row {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-family: monospace; font-size: 0.78rem;
+      cursor: pointer; color: var(--muted);
+      padding: 0.3rem 0.5rem; border-radius: 5px; margin-bottom: 0.2rem;
     }
-    #rocket-wrap .flame {
-      display: flex; justify-content: center; margin-top: -2px;
-      animation: flicker 0.12s infinite alternate;
-      transform-origin: top center;
+    .cred-row:hover { background: var(--surface2); color: var(--text); }
+    .cred-sep { color: var(--border); }
+    .cred-role {
+      font-size: 0.62rem; padding: 0.1rem 0.4rem; border-radius: 3px;
+      font-weight: 700; letter-spacing: 0.04em;
     }
-    @keyframes flicker {
-      from { transform: scaleY(1) scaleX(1); opacity: 0.95; }
-      to   { transform: scaleY(0.8) scaleX(1.15); opacity: 0.6; }
+    .cred-role.admin { background: rgba(79,140,255,0.15); color: var(--accent); }
+    .cred-role.emp   { background: rgba(167,139,250,0.15); color: var(--accent2); }
+    .cred-name { margin-left: auto; font-size: 0.7rem; color: var(--muted); }
+    #app { display: none; flex-direction: column; min-height: 100vh; }
+    #topbar {
+      position: sticky; top: 0; z-index: 50;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.7rem 1.5rem;
+      background: rgba(13,15,20,0.97); border-bottom: 1px solid var(--border);
     }
-    #rocket-wrap.landed .flame { animation: none; opacity: 0; }
-    #rocket-wrap.landed { transition: top 0.3s cubic-bezier(0.34,1.56,0.64,1); }
-
-    #moon-base {
-      position: absolute; left: 0; top: 0;
-      transform: translateX(-50%);
-      z-index: 15; pointer-events: none;
-      transition: filter 0.4s;
+    .tb-left { display: flex; align-items: center; gap: 0.9rem; }
+    .tb-logo { font-family: monospace; font-size: 0.85rem; color: var(--accent); font-weight: 700; }
+    .tb-name { font-size: 0.88rem; font-weight: 600; }
+    .tb-role-pill {
+      font-size: 0.62rem; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700; letter-spacing: 0.04em;
     }
-    #moon-base.glow { filter: drop-shadow(0 0 14px var(--accent)) drop-shadow(0 0 28px var(--accent2)); }
-
-    /* PROJECTS */
-    #projects { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-    .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap: 1.25rem; }
-    .project-card {
-      padding: 1.75rem; background: var(--bg); border: 1px solid var(--border);
-      border-radius: 10px; transition: border-color 0.2s;
+    .tb-role-pill.admin    { background: rgba(79,140,255,0.15); color: var(--accent); }
+    .tb-role-pill.employee { background: rgba(167,139,250,0.15); color: var(--accent2); }
+    .tb-right { display: flex; align-items: center; gap: 1.25rem; }
+    #tb-clock { font-family: monospace; font-size: 0.85rem; color: var(--muted); }
+    .signout-btn {
+      padding: 0.32rem 0.85rem; background: transparent;
+      border: 1px solid var(--border); border-radius: 6px;
+      color: var(--muted); font-size: 0.8rem; font-family: inherit; cursor: pointer;
     }
-    .project-card:hover { border-color: var(--accent2); }
-    .project-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; }
-    .project-card p { font-size: 0.87rem; color: var(--muted); margin-bottom: 1rem; line-height: 1.65; }
-    .tag-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-    .tag { font-family: monospace; font-size: 0.72rem; padding: 0.2rem 0.55rem; background: var(--tag-bg); border: 1px solid var(--border); border-radius: 4px; color: var(--muted); }
-    .featured-project {
-      grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;
-      padding: 3rem 2rem 2rem; background: var(--bg);
-      border: 1px solid var(--accent2); border-radius: 12px;
-      position: relative; overflow: hidden;
+    .signout-btn:hover { border-color: var(--red); color: var(--red); }
+    #tab-bar {
+      display: flex; border-bottom: 1px solid var(--border);
+      padding: 0 1.5rem; background: var(--surface); overflow-x: auto; flex-shrink: 0;
     }
-    .featured-project::before {
-      content: 'FEATURED'; position: absolute; top: 1rem; right: 1rem;
-      font-family: monospace; font-size: 0.65rem; font-weight: 700;
-      color: var(--accent2); letter-spacing: 0.1em;
-      background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.3);
-      padding: 0.2rem 0.55rem; border-radius: 4px;
+    .tab-btn {
+      padding: 0.85rem 1.1rem; background: none; border: none;
+      color: var(--muted); font-size: 0.87rem; font-family: inherit;
+      cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap;
+      display: flex; align-items: center; gap: 0.45rem;
     }
-    .featured-project h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.6rem; }
-    .featured-project p { font-size: 0.88rem; color: var(--muted); margin-bottom: 1rem; line-height: 1.7; }
-    .featured-details { display: flex; flex-direction: column; gap: 0.65rem; }
-    .feat-item { display: flex; align-items: flex-start; gap: 0.6rem; font-size: 0.84rem; color: var(--muted); }
-    .feat-item strong { color: var(--text); white-space: nowrap; }
-    .feat-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent2); flex-shrink: 0; margin-top: 6px; }
-    @media(max-width:700px) { .featured-project { grid-template-columns: 1fr; } }
-
-    /* CONTACT */
-    .contact-box {
-      text-align: center; padding: 4rem 2rem;
-      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .admin-badge {
+      font-size: 0.58rem; padding: 0.1rem 0.35rem;
+      background: rgba(79,140,255,0.12); color: var(--accent);
+      border: 1px solid rgba(79,140,255,0.25); border-radius: 3px;
+      font-weight: 700; letter-spacing: 0.04em;
     }
-    .contact-box h2 { margin-bottom: 0.75rem; }
-    .contact-box p { color: var(--muted); margin-bottom: 2rem; font-size: 0.95rem; }
-    .contact-links { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
-
-    /* FOOTER */
-    footer {
-      text-align: center; padding: 2rem;
-      font-family: monospace; font-size: 0.75rem; color: var(--muted);
-      border-top: 1px solid var(--border);
+    .tab-pane { display: none; padding: 1.75rem 1.5rem; max-width: 960px; margin: 0 auto; width: 100%; }
+    .tab-pane.active { display: block; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+    @media(max-width:600px) { .grid-2 { grid-template-columns: 1fr; } }
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.4rem;
     }
-
-    /* SCROLL REVEAL */
-    .reveal {
-      opacity: 0; transform: translateY(32px);
-      transition: opacity 0.55s ease, transform 0.55s ease;
+    .card-label {
+      font-family: monospace; font-size: 0.7rem; color: var(--accent);
+      letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.75rem;
     }
-    .reveal.visible { opacity: 1; transform: translateY(0); }
-
-    .reveal-left {
-      opacity: 0; transform: translateX(-32px);
-      transition: opacity 0.55s ease, transform 0.55s ease;
+    .big-clock { font-family: monospace; font-size: 2.6rem; font-weight: 700; letter-spacing: -0.02em; }
+    .big-date  { font-size: 0.82rem; color: var(--muted); margin-top: 0.2rem; }
+    .status-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
+    .dot.in  { background: var(--green); box-shadow: 0 0 6px var(--green); }
+    .dot.out { background: var(--muted); }
+    .status-label { font-size: 0.9rem; font-weight: 600; }
+    .timer { font-family: monospace; font-size: 1.5rem; margin: 0.5rem 0 0.2rem; }
+    .timer-sub { font-size: 0.78rem; color: var(--muted); margin-bottom: 1rem; }
+    .clock-btn {
+      width: 100%; padding: 0.7rem; border: none; border-radius: 8px;
+      font-size: 0.9rem; font-weight: 600; font-family: inherit; cursor: pointer;
     }
-    .reveal-left.visible { opacity: 1; transform: translateX(0); }
-
-    /* stagger children */
-    .stagger > * { opacity: 0; transform: translateY(28px); transition: opacity 0.5s ease, transform 0.5s ease; }
-    .stagger.visible > *:nth-child(1) { opacity:1; transform:none; transition-delay:0s; }
-    .stagger.visible > *:nth-child(2) { opacity:1; transform:none; transition-delay:0.07s; }
-    .stagger.visible > *:nth-child(3) { opacity:1; transform:none; transition-delay:0.14s; }
-    .stagger.visible > *:nth-child(4) { opacity:1; transform:none; transition-delay:0.21s; }
-    .stagger.visible > *:nth-child(5) { opacity:1; transform:none; transition-delay:0.28s; }
-    .stagger.visible > *:nth-child(6) { opacity:1; transform:none; transition-delay:0.35s; }
-
-    @media(max-width:600px) {
-      nav { padding: 1rem 1.25rem; }
-      .nav-links { gap: 1.25rem; }
-      section { padding: 3.5rem 1.25rem; }
+    .clock-btn.in  { background: var(--green); color: #fff; }
+    .clock-btn.out { background: var(--red); color: #fff; }
+    .stat-row { display: flex; justify-content: space-between; padding: 0.35rem 0; font-size: 0.85rem; border-bottom: 1px solid var(--border); }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-val { font-weight: 600; font-family: monospace; color: var(--accent); }
+    .section-head { font-size: 0.88rem; font-weight: 700; margin: 1.25rem 0 0.75rem; }
+    .history-list { display: flex; flex-direction: column; gap: 0.45rem; }
+    .history-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.55rem 0.8rem;
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 7px;
+      font-size: 0.82rem;
     }
+    .history-date { color: var(--muted); font-family: monospace; font-size: 0.76rem; }
+    .history-dur  { font-family: monospace; font-weight: 600; color: var(--accent); }
+    .task-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    .task-item {
+      display: flex; gap: 0.75rem; align-items: flex-start;
+      padding: 0.9rem 1rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    }
+    .chk {
+      width: 18px; height: 18px; border-radius: 4px;
+      border: 2px solid var(--border); background: none;
+      cursor: pointer; flex-shrink: 0; margin-top: 2px;
+      display: flex; align-items: center; justify-content: center; font-size: 11px; color: #fff;
+    }
+    .chk.done { background: var(--accent); border-color: var(--accent); }
+    .task-body { flex: 1; }
+    .task-title { font-size: 0.88rem; font-weight: 500; }
+    .task-title.done { text-decoration: line-through; color: var(--muted); }
+    .task-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.35rem; }
+    .tag {
+      font-family: monospace; font-size: 0.68rem; padding: 0.1rem 0.45rem;
+      background: var(--tag-bg); border: 1px solid var(--border); border-radius: 3px; color: var(--muted);
+    }
+    .tag.upcoming { border-color: var(--yellow); color: var(--yellow); }
+    .tag.overdue  { border-color: var(--red);    color: var(--red); }
+    .tag.assigned { border-color: rgba(79,140,255,0.3); color: var(--accent); }
+    .week-strip { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; overflow-x: auto; padding-bottom: 0.25rem; }
+    .day-cell {
+      flex: 1; min-width: 76px; text-align: center;
+      padding: 0.7rem 0.4rem; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 10px;
+    }
+    .day-cell.today { border-color: var(--accent); }
+    .day-name { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .day-num  { font-size: 1.1rem; font-weight: 700; margin-top: 0.15rem; }
+    .day-dot  { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); margin: 0.35rem auto 0; }
+    .sched-block { margin-bottom: 1.5rem; }
+    .sched-block-label {
+      font-family: monospace; font-size: 0.7rem; color: var(--muted);
+      letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.6rem;
+    }
+    .sched-task {
+      display: flex; gap: 0.65rem; align-items: center;
+      padding: 0.6rem 0.85rem; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 8px; margin-bottom: 0.4rem; font-size: 0.85rem;
+    }
+    .sched-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .admin-section { margin-bottom: 2rem; }
+    .admin-section-hd {
+      display: flex; align-items: center; gap: 0.65rem;
+      margin-bottom: 1rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--border);
+    }
+    .admin-section-title { font-size: 1rem; font-weight: 700; }
+    .admin-only-pill {
+      font-size: 0.6rem; padding: 0.15rem 0.5rem;
+      background: rgba(79,140,255,0.1); color: var(--accent);
+      border: 1px solid rgba(79,140,255,0.25); border-radius: 20px;
+      font-weight: 700; letter-spacing: 0.05em;
+    }
+    .emp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px,1fr)); gap: 0.75rem; }
+    .emp-card {
+      padding: 1rem; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 10px;
+    }
+    .emp-name { font-size: 0.88rem; font-weight: 600; margin-bottom: 0.15rem; }
+    .emp-user { font-family: monospace; font-size: 0.73rem; color: var(--muted); margin-bottom: 0.5rem; }
+    .status-pill {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      padding: 0.18rem 0.55rem; border-radius: 20px; font-size: 0.73rem; font-weight: 600;
+    }
+    .status-pill.in  { background: rgba(34,197,94,0.1);  color: var(--green); }
+    .status-pill.out { background: rgba(122,127,148,0.1); color: var(--muted); }
+    .emp-hours { font-family: monospace; font-size: 0.76rem; color: var(--accent); margin-top: 0.4rem; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+    .data-table th {
+      text-align: left; padding: 0.5rem 0.85rem;
+      font-size: 0.7rem; color: var(--muted); font-weight: 600;
+      letter-spacing: 0.06em; text-transform: uppercase; border-bottom: 1px solid var(--border);
+    }
+    .data-table td { padding: 0.65rem 0.85rem; border-bottom: 1px solid var(--border); }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: var(--surface2); }
+    .role-pill {
+      font-size: 0.68rem; padding: 0.12rem 0.45rem; border-radius: 4px; font-weight: 600;
+    }
+    .role-pill.admin    { background: rgba(79,140,255,0.15); color: var(--accent); }
+    .role-pill.employee { background: rgba(167,139,250,0.15); color: var(--accent2); }
+    .log-list { display: flex; flex-direction: column; gap: 0.25rem; }
+    .log-row {
+      display: flex; gap: 0.75rem; padding: 0.45rem 0.6rem;
+      font-size: 0.81rem; border-radius: 6px;
+    }
+    .log-row:hover { background: var(--surface2); }
+    .log-time { font-family: monospace; color: var(--muted); font-size: 0.74rem; flex-shrink: 0; white-space: nowrap; }
+    .log-msg  { color: var(--text); }
+    .log-who  { color: var(--accent2); font-weight: 500; }
+    .page-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 1.5rem; }
+    .empty-msg { font-size: 0.85rem; color: var(--muted); padding: 1rem 0; }
   </style>
 </head>
 <body>
 
-<nav>
-  <span class="nav-logo">jessieroi.dev</span>
-  <div class="nav-links">
-    <a href="#skills">Skills</a>
-    <a href="#experience">Experience</a>
-    <a href="#projects">Projects</a>
-    <a href="#contact">Hire Me</a>
-    <a href="resume.html" target="_blank" style="color:var(--accent);border:1px solid var(--accent);padding:0.3rem 0.9rem;border-radius:5px;font-size:0.82rem;">Resume</a>
-  </div>
-</nav>
-
-<section class="hero">
-  <div class="hero-inner">
-    <p class="hero-eyebrow reveal">Available for freelance work</p>
-    <h1 class="reveal" style="transition-delay:0.08s">Jessie Roi Bautista<br><span>VA · Player Support · Management</span></h1>
-    <p class="hero-sub reveal" style="transition-delay:0.16s">CS graduate from STI Ortigas Cainta. 5+ years working with AAA game studios across player support, community moderation, content creation, and team management. I work fast, communicate well, and know how to get things done.</p>
-    <div class="hero-actions reveal" style="transition-delay:0.24s">
-      <a href="#contact" class="btn btn-primary">Get in Touch</a>
-      <a href="#experience" class="btn btn-outline">View Experience</a>
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">Clock In Service</div>
+    <h1>Welcome back</h1>
+    <p class="sub">Sign in to your account to continue</p>
+    <div class="field">
+      <label>Username</label>
+      <input type="text" id="li-user" placeholder="username" autocomplete="off"
+        onkeydown="if(event.key==='Enter')doLogin()"/>
     </div>
-  </div>
-</section>
-
-<section id="skills">
-  <div class="container">
-    <p class="section-label reveal">What I do</p>
-    <h2 class="reveal" style="transition-delay:0.05s">Skills & Tools</h2>
-    <div class="skills-grid stagger">
-      <div class="skill-card"><div class="skill-icon">🎮</div><h3>Player Support & Moderation</h3><p>T1–T3 player engagement across AAA titles. Escalations, community health, and trust management at scale.</p></div>
-      <div class="skill-card"><div class="skill-icon">📋</div><h3>Project & Team Management</h3><p>Managed multiple teams simultaneously above team lead level. On deadline, organized, and results-driven.</p></div>
-      <div class="skill-card"><div class="skill-icon">✍️</div><h3>Content Creation & SEO</h3><p>YouTube & TikTok guides with AI-assisted video editing. Google Trends research and discoverability optimization.</p></div>
-      <div class="skill-card"><div class="skill-icon">🤖</div><h3>AI-Powered Workflows</h3><p>Proficient with Claude, ChatGPT, and NotebookLM — used daily as real productivity tools.</p></div>
-      <div class="skill-card"><div class="skill-icon">🛠️</div><h3>Tools & Tech</h3><p>WordPress · Google Sheets · Discord Management · Node.js · Express · SEO Research</p></div>
-      <div class="skill-card"><div class="skill-icon">💻</div><h3>CS Background</h3><p>Computer Science graduate from STI Ortigas Cainta. Built a full-stack internal tool with auth, scheduling, and real-time features.</p></div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="li-pass" placeholder="password"
+        onkeydown="if(event.key==='Enter')doLogin()"/>
     </div>
-  </div>
-</section>
-
-<section id="experience">
-  <canvas class="stars-canvas" id="stars-canvas"></canvas>
-  <div class="container exp-inner">
-    <p class="section-label reveal">Work History</p>
-    <h2 class="reveal" style="transition-delay:0.05s">Experience</h2>
-    <div class="timeline-wrap">
-      <div id="rocket-wrap">
-        <svg width="26" height="48" viewBox="0 0 26 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M13 2 C13 2, 5 14, 5 24 L21 24 C21 14, 13 2, 13 2Z" fill="#4f8cff"/>
-          <rect x="5" y="23" width="16" height="14" rx="2" fill="#e8eaf0"/>
-          <circle cx="13" cy="30" r="3.5" fill="#141720" stroke="#4f8cff" stroke-width="1.5"/>
-          <path d="M5 32 L0 42 L6 38 Z" fill="#a78bfa"/>
-          <path d="M21 32 L26 42 L20 38 Z" fill="#a78bfa"/>
-          <rect x="9" y="37" width="8" height="3" rx="1" fill="#7a7f94"/>
-        </svg>
-        <div class="flame">
-          <svg width="12" height="18" viewBox="0 0 12 18">
-            <ellipse cx="6" cy="9" rx="4.5" ry="9" fill="#f59e0b" opacity="0.9"/>
-            <ellipse cx="6" cy="7" rx="2.5" ry="6" fill="#fef3c7" opacity="0.8"/>
-          </svg>
-        </div>
+    <button class="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="login-error" id="login-err">Invalid username or password.</div>
+    <div style="margin-top:1.25rem;padding:0.85rem 1rem;background:rgba(167,139,250,0.06);border:1px solid rgba(167,139,250,0.2);border-radius:10px;font-size:0.8rem;color:var(--muted);line-height:1.6;">
+      <span style="color:var(--accent2);font-weight:600;">⚠ Demo Version</span> — This is a static preview. Some features from the full system are not available here, including TOTP 2FA, avatar uploads, name-change requests, admin task creation/editing, news hub, real-time disconnect detection, and IP lockout management. Data resets when browser storage is cleared.
+    </div>
+    <div class="creds-box">
+      <div class="creds-title">Demo credentials — click to fill</div>
+      <div class="cred-row" onclick="fill('admin','admin123')">
+        <span class="cred-role admin">ADMIN</span>
+        <span>admin</span><span class="cred-sep">/</span><span>admin123</span>
+        <span class="cred-name">Jessie Roi Bautista</span>
       </div>
-
-      <div id="moon-base">
-        <svg width="46" height="46" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="23" cy="23" r="21" fill="#1a1f2e" stroke="#4f8cff" stroke-width="1"/>
-          <circle cx="15" cy="18" r="4.5" fill="#0d0f14" stroke="#2a2f40" stroke-width="0.5"/>
-          <circle cx="30" cy="28" r="2.8" fill="#0d0f14" stroke="#2a2f40" stroke-width="0.5"/>
-          <circle cx="20" cy="32" r="3.2" fill="#0d0f14" stroke="#2a2f40" stroke-width="0.5"/>
-          <path d="M10 14 Q14 8 20 7" stroke="#3a4060" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-        </svg>
+      <div class="cred-row" onclick="fill('sarah_j','pass123')">
+        <span class="cred-role emp">EMP</span>
+        <span>sarah_j</span><span class="cred-sep">/</span><span>pass123</span>
+        <span class="cred-name">Sarah Johnson</span>
       </div>
-
-      <div class="timeline" id="exp-timeline">
-        <div class="timeline-item reveal-left">
-          <p class="tl-meta">Oct 2024 — Jun 2026</p>
-          <p class="tl-company">VA Side Job</p>
-          <p class="tl-title">Project Manager / Content Creator</p>
-          <p class="tl-desc">Managed multiple teams above team lead level. Created guides and content for YouTube & TikTok, handled Discord, WordPress, SEO research, Google Sheets, and built an in-house clock-in tracker.</p>
-        </div>
-        <div class="timeline-item reveal-left" style="transition-delay:0.07s">
-          <p class="tl-meta">Dec 2023 — Jul 2025</p>
-          <p class="tl-company">Scopely (via Keywords Studios Manila)</p>
-          <p class="tl-title">Moderator — Monopoly Go!</p>
-          <p class="tl-desc">Community moderation for one of the most downloaded mobile titles. Maintained community health and player trust.</p>
-        </div>
-        <div class="timeline-item reveal-left" style="transition-delay:0.14s">
-          <p class="tl-meta">Jan 2022 — Dec 2024</p>
-          <p class="tl-company">Amazon Games (via Keywords Studios Manila)</p>
-          <p class="tl-title">T3 Player Engagement — New World / Lost Ark</p>
-          <p class="tl-desc">Tier 3 player support for two major live-service titles. Handled complex escalations and high-stakes player issues.</p>
-        </div>
-        <div class="timeline-item reveal-left" style="transition-delay:0.21s">
-          <p class="tl-meta">May 2021 — Jan 2022</p>
-          <p class="tl-company">343 Industries (via Keywords Studios Manila)</p>
-          <p class="tl-title">Player Engagement — Halo</p>
-          <p class="tl-desc">Player support for the Halo franchise during the Halo Infinite launch window.</p>
-        </div>
-        <div class="timeline-item reveal-left" style="transition-delay:0.28s">
-          <p class="tl-meta">Jan 2020 — May 2021</p>
-          <p class="tl-company">Playdemic (via Keywords Studios Manila)</p>
-          <p class="tl-title">Player Engagement</p>
-          <p class="tl-desc">Built foundational skills in ticketing, escalation, and player communication.</p>
-        </div>
+      <div class="cred-row" onclick="fill('mike_d','pass123')">
+        <span class="cred-role emp">EMP</span>
+        <span>mike_d</span><span class="cred-sep">/</span><span>pass123</span>
+        <span class="cred-name">Mike Davies</span>
+      </div>
+      <div class="cred-row" onclick="fill('luna_k','pass123')">
+        <span class="cred-role emp">EMP</span>
+        <span>luna_k</span><span class="cred-sep">/</span><span>pass123</span>
+        <span class="cred-name">Luna Kim</span>
+      </div>
+      <div class="cred-row" onclick="fill('rex_b','pass123')">
+        <span class="cred-role emp">EMP</span>
+        <span>rex_b</span><span class="cred-sep">/</span><span>pass123</span>
+        <span class="cred-name">Rex Brown</span>
       </div>
     </div>
   </div>
-</section>
+</div>
 
-<section id="projects">
-  <div class="container">
-    <p class="section-label reveal">What I've built</p>
-    <h2 class="reveal" style="transition-delay:0.05s">Projects</h2>
-    <div class="projects-grid stagger">
-      <div class="featured-project">
-        <div>
-          <h3>Clock In Service — Internal Staff Tool</h3>
-          <p>A full-stack attendance and team management system built from scratch. Handles real-time clock-in/out, task scheduling, game news, payroll summaries, and staff coordination — all in a single web app with a polished dark UI.</p>
-          <div class="tag-row" style="margin-bottom:1rem">
-            <span class="tag">Node.js</span><span class="tag">Express</span><span class="tag">lowdb</span>
-            <span class="tag">Web Audio API</span><span class="tag">Canvas</span><span class="tag">TOTP 2FA</span>
-          </div>
-          <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
-            <a href="https://github.com/jroibautista/ClockIn" class="btn btn-outline" target="_blank" style="font-size:0.82rem;padding:0.5rem 1.1rem">View GitHub</a>
-            <a href="https://jroibautista.github.io/ClockIn.github.io/" class="btn btn-primary" target="_blank" style="font-size:0.82rem;padding:0.5rem 1.1rem">&#9654; Live Demo</a>
-          </div>
-        </div>
-        <div class="featured-details">
-          <div class="feat-item"><span class="feat-dot"></span><div><strong>Auth & Security</strong> — TOTP 2FA, session management, IP lockouts after failed logins, auto clock-out on disconnect</div></div>
-          <div class="feat-item"><span class="feat-dot"></span><div><strong>Task System</strong> — Recurring & one-time tasks, due dates, scheduling, per-employee assignment, undo completions</div></div>
-          <div class="feat-item"><span class="feat-dot"></span><div><strong>Real-time Features</strong> — Health-check reconnect loop, disconnect alerts, live clock, new-task toast notifications</div></div>
-          <div class="feat-item"><span class="feat-dot"></span><div><strong>Admin Panel</strong> — Payroll, archive, user management, activity logs, settings, name-change approvals</div></div>
-          <div class="feat-item"><span class="feat-dot"></span><div><strong>News Hub</strong> — Live RSS feeds, category filters, social links, auto-refresh</div></div>
-        </div>
-      </div>
-      <div class="project-card">
-        <h3>Content & Guide Creation</h3>
-        <p>Produced game guides and content for YouTube and TikTok using AI-assisted video editing and SEO-informed research.</p>
-        <div class="tag-row"><span class="tag">YouTube</span><span class="tag">TikTok</span><span class="tag">SEO</span><span class="tag">AI Tools</span></div>
-      </div>
-      <div class="project-card">
-        <h3>Multi-Team Management</h3>
-        <p>Led and coordinated multiple teams as Project Manager, handling workflows, deadlines, and deliverables.</p>
-        <div class="tag-row"><span class="tag">Project Management</span><span class="tag">Discord</span><span class="tag">Leadership</span></div>
-      </div>
+<div id="app">
+  <div id="topbar">
+    <div class="tb-left">
+      <span class="tb-logo">Clock In</span>
+      <span class="tb-name" id="tb-name"></span>
+      <span class="tb-role-pill" id="tb-role"></span>
     </div>
-    <p class="reveal" style="margin-top:1.5rem;font-size:0.85rem;color:var(--muted);">More projects coming soon.</p>
-  </div>
-</section>
-
-<section id="contact">
-  <div class="container">
-    <div class="contact-box reveal">
-      <p class="section-label" style="margin-bottom:0.5rem;">Let's work together</p>
-      <h2>Available for Hire</h2>
-      <p>Open to long-term contracts<br>Player support, VA work, moderation, content, project management — I do it all.</p>
-      <div class="contact-links">
-        <a href="https://github.com/jroibautista" class="btn btn-outline" target="_blank">GitHub</a>
-        <a href="mailto:bautistajessieroi@gmail.com" class="btn btn-primary">Email Me</a>
-      </div>
+    <div class="tb-right">
+      <span id="tb-clock"></span>
+      <button class="signout-btn" onclick="signOut()">Sign Out</button>
     </div>
   </div>
-</section>
+  <div id="tab-bar">
+    <button class="tab-btn active" id="tabbtn-clock"    onclick="switchTab('clock')">Clock</button>
+    <button class="tab-btn"        id="tabbtn-tasks"    onclick="switchTab('tasks')">Tasks</button>
+    <button class="tab-btn"        id="tabbtn-schedule" onclick="switchTab('schedule')">Schedule</button>
+    <button class="tab-btn"        id="tabbtn-admin"    onclick="switchTab('admin')" style="display:none">
+      Admin <span class="admin-badge">ADMIN ONLY</span>
+    </button>
+  </div>
 
-<footer>
-  <p>&copy; 2026 Jessie Roi Bautista &mdash; Built with GitHub Pages</p>
-</footer>
+  <div id="pane-clock" class="tab-pane active">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-label">Current Time</div>
+        <div class="big-clock" id="live-clock">00:00:00</div>
+        <div class="big-date"  id="live-date"></div>
+      </div>
+      <div class="card">
+        <div class="card-label">Your Status</div>
+        <div class="status-row">
+          <span class="dot" id="status-dot"></span>
+          <span class="status-label" id="status-label"></span>
+        </div>
+        <div class="timer" id="timer">00:00:00</div>
+        <div class="timer-sub" id="timer-sub"></div>
+        <button class="clock-btn" id="clock-btn" onclick="toggleClock()"></button>
+      </div>
+    </div>
+    <div style="height:1.25rem"></div>
+    <div class="card">
+      <div class="card-label">This Week</div>
+      <div id="week-stats"></div>
+      <div class="section-head">Recent Sessions</div>
+      <div class="history-list" id="history-list"></div>
+    </div>
+  </div>
+
+  <div id="pane-tasks" class="tab-pane">
+    <div class="page-title">Tasks</div>
+    <div class="task-list" id="task-list"></div>
+  </div>
+
+  <div id="pane-schedule" class="tab-pane">
+    <div class="page-title">Schedule</div>
+    <div class="week-strip" id="week-strip"></div>
+    <div id="sched-body"></div>
+  </div>
+
+  <div id="pane-admin" class="tab-pane">
+    <div class="page-title">Admin Panel</div>
+    <div class="admin-section">
+      <div class="admin-section-hd">
+        <span class="admin-section-title">Employee Status</span>
+        <span class="admin-only-pill">ADMIN ONLY</span>
+      </div>
+      <div class="emp-grid" id="emp-grid"></div>
+    </div>
+    <div class="admin-section">
+      <div class="admin-section-hd">
+        <span class="admin-section-title">Payroll Summary — This Week</span>
+        <span class="admin-only-pill">ADMIN ONLY</span>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table class="data-table">
+          <thead><tr><th>Employee</th><th>Total Hours</th><th>Sessions</th><th>Status</th></tr></thead>
+          <tbody id="payroll-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="admin-section">
+      <div class="admin-section-hd">
+        <span class="admin-section-title">User Management</span>
+        <span class="admin-only-pill">ADMIN ONLY</span>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table class="data-table">
+          <thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Total Sessions</th></tr></thead>
+          <tbody id="users-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="admin-section">
+      <div class="admin-section-hd">
+        <span class="admin-section-title">Activity Log</span>
+        <span class="admin-only-pill">ADMIN ONLY</span>
+      </div>
+      <div class="card">
+        <div class="log-list" id="log-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
-  /* ── STARS ── */
-  (function () {
-    const canvas = document.getElementById('stars-canvas');
-    const section = document.getElementById('experience');
-    function resize() {
-      canvas.width  = section.offsetWidth;
-      canvas.height = section.offsetHeight;
-      draw();
-    }
-    function draw() {
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const rng = mulberry32(42);
-      for (let i = 0; i < 120; i++) {
-        const x = rng() * canvas.width;
-        const y = rng() * canvas.height;
-        const r = rng() * 1.2 + 0.2;
-        const a = rng() * 0.6 + 0.2;
-        ctx.beginPath();
-        ctx.arc(x, y, r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(232,234,240,${a})`;
-        ctx.fill();
-      }
-    }
-    function mulberry32(seed) {
-      return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
-    }
-    resize();
-    window.addEventListener('resize', resize);
-  })();
+const USERS = [
+  { id:'u1', username:'admin',   password:'admin123', display:'Jessie Roi Bautista', role:'admin' },
+  { id:'u2', username:'sarah_j', password:'pass123',  display:'Sarah Johnson',       role:'employee' },
+  { id:'u3', username:'mike_d',  password:'pass123',  display:'Mike Davies',         role:'employee' },
+  { id:'u4', username:'luna_k',  password:'pass123',  display:'Luna Kim',            role:'employee' },
+  { id:'u5', username:'rex_b',   password:'pass123',  display:'Rex Brown',           role:'employee' },
+];
 
-  /* ── SCROLL REVEAL ── */
-  const revealObs = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      const cls = e.target.classList.contains('stagger') ? 'visible'
-        : e.target.classList.contains('reveal-left') ? 'visible' : 'visible';
-      if (e.isIntersecting) e.target.classList.add('visible');
-      else e.target.classList.remove('visible');
-    });
-  }, { threshold: 0.12 });
+const TASKS = [
+  { id:'t1', title:'Morning standup notes',      type:'recurring', due:null,         assignedTo:[] },
+  { id:'t2', title:'Review support tickets',     type:'recurring', due:null,         assignedTo:['u2','u3'] },
+  { id:'t3', title:'Update team spreadsheet',    type:'recurring', due:null,         assignedTo:[] },
+  { id:'t4', title:'Q2 performance review',      type:'one-time',  due:'2026-06-20', assignedTo:[] },
+  { id:'t5', title:'Onboard new contractor',     type:'one-time',  due:'2026-06-15', assignedTo:['u1'] },
+  { id:'t6', title:'Weekly content calendar',    type:'recurring', due:null,         assignedTo:['u2','u4'] },
+  { id:'t7', title:'Community moderation sweep', type:'recurring', due:null,         assignedTo:['u4','u5'] },
+  { id:'t8', title:'Bug report documentation',   type:'one-time',  due:'2026-06-12', assignedTo:['u5'] },
+];
 
-  document.querySelectorAll('.reveal, .reveal-left, .stagger').forEach(el => revealObs.observe(el));
+function buildSessions() {
+  const H = 3600000, D = 86400000;
+  const d = new Date(); d.setHours(0,0,0,0);
+  const T = d.getTime();
+  const now = Date.now();
+  const sarahIn = Math.min(T + 8.5*H, now - 30*60000);
+  const lunaIn  = Math.min(T + 10*H,  now - 20*60000);
+  return [
+    { id:'s1',  userId:'u2', clockIn:T-6*D+8.5*H, clockOut:T-6*D+17.5*H },
+    { id:'s2',  userId:'u2', clockIn:T-5*D+8*H,   clockOut:T-5*D+17*H },
+    { id:'s3',  userId:'u2', clockIn:T-4*D+8.5*H, clockOut:T-4*D+17*H },
+    { id:'s4',  userId:'u2', clockIn:T-3*D+9*H,   clockOut:T-3*D+18*H },
+    { id:'s5',  userId:'u2', clockIn:T-2*D+8*H,   clockOut:T-2*D+17*H },
+    { id:'s6',  userId:'u2', clockIn:T-1*D+8.5*H, clockOut:T-1*D+17.5*H },
+    { id:'s7',  userId:'u2', clockIn:sarahIn,      clockOut:null },
+    { id:'s8',  userId:'u3', clockIn:T-6*D+9*H,   clockOut:T-6*D+18*H },
+    { id:'s9',  userId:'u3', clockIn:T-5*D+9*H,   clockOut:T-5*D+18*H },
+    { id:'s10', userId:'u3', clockIn:T-4*D+9*H,   clockOut:T-4*D+17.5*H },
+    { id:'s11', userId:'u3', clockIn:T-3*D+9*H,   clockOut:T-3*D+18*H },
+    { id:'s12', userId:'u3', clockIn:T-2*D+9*H,   clockOut:T-2*D+18*H },
+    { id:'s13', userId:'u3', clockIn:T-1*D+9*H,   clockOut:T-1*D+18*H },
+    { id:'s14', userId:'u4', clockIn:T-6*D+10*H,  clockOut:T-6*D+19*H },
+    { id:'s15', userId:'u4', clockIn:T-4*D+10*H,  clockOut:T-4*D+19*H },
+    { id:'s16', userId:'u4', clockIn:T-2*D+10*H,  clockOut:T-2*D+19*H },
+    { id:'s17', userId:'u4', clockIn:lunaIn,       clockOut:null },
+    { id:'s18', userId:'u5', clockIn:T-6*D+8*H,   clockOut:T-6*D+16*H },
+    { id:'s19', userId:'u5', clockIn:T-5*D+8*H,   clockOut:T-5*D+16*H },
+    { id:'s20', userId:'u5', clockIn:T-4*D+8*H,   clockOut:T-4*D+16*H },
+    { id:'s21', userId:'u5', clockIn:T-3*D+8*H,   clockOut:T-3*D+16*H },
+    { id:'s22', userId:'u5', clockIn:T-2*D+8*H,   clockOut:T-2*D+16*H },
+    { id:'s23', userId:'u5', clockIn:T-1*D+8*H,   clockOut:T-1*D+16*H },
+    { id:'s24', userId:'u1', clockIn:T-6*D+9*H,   clockOut:T-6*D+18*H },
+    { id:'s25', userId:'u1', clockIn:T-5*D+9*H,   clockOut:T-5*D+17*H },
+    { id:'s26', userId:'u1', clockIn:T-4*D+9*H,   clockOut:T-4*D+18*H },
+    { id:'s27', userId:'u1', clockIn:T-3*D+9*H,   clockOut:T-3*D+17.5*H },
+    { id:'s28', userId:'u1', clockIn:T-2*D+9*H,   clockOut:T-2*D+17*H },
+    { id:'s29', userId:'u1', clockIn:T-1*D+9*H,   clockOut:T-1*D+18*H },
+  ];
+}
 
-  /* ── ROCKET ── */
-  const rocketWrap = document.getElementById('rocket-wrap');
-  const moonBase   = document.getElementById('moon-base');
-  const expTL      = document.getElementById('exp-timeline');
-  let   lastRaf    = null;
-
-  function updateRocket() {
-    if (!expTL || !rocketWrap) return;
-    const rect     = expTL.getBoundingClientRect();
-    const vh       = window.innerHeight;
-    const items    = expTL.querySelectorAll('.timeline-item');
-    const lastRect = items[items.length - 1].getBoundingClientRect();
-
-    const lastCenterInTL = (lastRect.top - rect.top) + lastRect.height / 2;
-    const lastCenterVP   = lastRect.top + lastRect.height / 2;
-
-    const startPos = vh + lastCenterInTL;
-    const endPos   = vh / 2;
-    const progress = Math.max(0, Math.min(1, (startPos - lastCenterVP) / (startPos - endPos)));
-
-    rocketWrap.style.top = Math.max(0, (progress * lastCenterInTL) - 24) + 'px';
-    moonBase.style.top   = (lastCenterInTL - 10) + 'px';
-
-    if (progress >= 0.98) {
-      rocketWrap.classList.add('landed');
-      moonBase.classList.add('glow');
-    } else {
-      rocketWrap.classList.remove('landed');
-      moonBase.classList.remove('glow');
-    }
+function buildLog(sessions) {
+  const lines = [];
+  const sorted = [...sessions].filter(s => s.clockOut).sort((a,b) => b.clockOut - a.clockOut).slice(0,20);
+  for (const s of sorted) {
+    const u = USERS.find(u => u.id === s.userId);
+    if (!u) continue;
+    lines.push({ time:s.clockOut, msg:'clocked out after '+fmtDur(s.clockOut-s.clockIn), who:u.display });
+    lines.push({ time:s.clockIn,  msg:'clocked in', who:u.display });
   }
+  return lines.sort((a,b) => b.time - a.time).slice(0,30);
+}
 
-  window.addEventListener('scroll', () => {
-    if (lastRaf) cancelAnimationFrame(lastRaf);
-    lastRaf = requestAnimationFrame(updateRocket);
-  }, { passive: true });
+let cur = null, state = null, _tick = null;
 
-  updateRocket();
+function loadState() {
+  const raw = localStorage.getItem('cis_v2');
+  if (raw) return JSON.parse(raw);
+  const sessions = buildSessions();
+  const s = { sessions, completions:{}, log:buildLog(sessions), nid:100 };
+  localStorage.setItem('cis_v2', JSON.stringify(s));
+  return s;
+}
+function save() { localStorage.setItem('cis_v2', JSON.stringify(state)); }
 
-  /* ── HERO REVEAL ON LOAD ── */
-  window.addEventListener('load', () => {
-    document.querySelectorAll('.hero .reveal').forEach(el => el.classList.add('visible'));
-  });
+function fill(u, p) {
+  document.getElementById('li-user').value = u;
+  document.getElementById('li-pass').value = p;
+}
+
+function doLogin() {
+  const u = document.getElementById('li-user').value.trim();
+  const p = document.getElementById('li-pass').value;
+  const user = USERS.find(x => x.username===u && x.password===p);
+  if (!user) { document.getElementById('login-err').style.display='block'; return; }
+  document.getElementById('login-err').style.display = 'none';
+  cur = user; state = loadState();
+  document.getElementById('login-screen').style.display = 'none';
+  const app = document.getElementById('app');
+  app.style.display = 'flex';
+  document.getElementById('tb-name').textContent = cur.display;
+  const rp = document.getElementById('tb-role');
+  rp.textContent = cur.role.toUpperCase(); rp.className = 'tb-role-pill '+cur.role;
+  if (cur.role==='admin') document.getElementById('tabbtn-admin').style.display='flex';
+  _tick = setInterval(tick, 1000); tick();
+  switchTab('clock');
+}
+
+function signOut() {
+  clearInterval(_tick); cur=null; state=null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('li-user').value='';
+  document.getElementById('li-pass').value='';
+  document.getElementById('tabbtn-admin').style.display='none';
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tabbtn-'+name).classList.add('active');
+  document.getElementById('pane-'+name).classList.add('active');
+  if (name==='clock')    renderClock();
+  if (name==='tasks')    renderTasks();
+  if (name==='schedule') renderSchedule();
+  if (name==='admin')    renderAdmin();
+}
+
+function tick() {
+  const now = new Date();
+  const t = now.toLocaleTimeString('en-GB');
+  document.getElementById('tb-clock').textContent = t;
+  document.getElementById('live-clock').textContent = t;
+  document.getElementById('live-date').textContent = now.toLocaleDateString('en-GB',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const open = openSess();
+  if (open) document.getElementById('timer').textContent = fmtMs(Date.now()-open.clockIn);
+}
+
+function openSess() { return state.sessions.find(s=>s.userId===cur.id&&!s.clockOut)||null; }
+
+function renderClock() {
+  const open = openSess();
+  const dot=document.getElementById('status-dot'), lbl=document.getElementById('status-label');
+  const sub=document.getElementById('timer-sub'), btn=document.getElementById('clock-btn');
+  if (open) {
+    dot.className='dot in'; lbl.textContent='Clocked In';
+    document.getElementById('timer').textContent = fmtMs(Date.now()-open.clockIn);
+    sub.textContent='Session started '+new Date(open.clockIn).toLocaleTimeString('en-GB');
+    btn.textContent='Clock Out'; btn.className='clock-btn out';
+  } else {
+    dot.className='dot out'; lbl.textContent='Clocked Out';
+    document.getElementById('timer').textContent='00:00:00';
+    sub.textContent='Press below to start your shift';
+    btn.textContent='Clock In'; btn.className='clock-btn in';
+  }
+  const d=new Date(); d.setHours(0,0,0,0);
+  const ws=d.getTime()-((d.getDay()||7)-1)*86400000;
+  const my=state.sessions.filter(s=>s.userId===cur.id&&s.clockIn>=ws);
+  const comp=my.filter(s=>s.clockOut);
+  const totMs=comp.reduce((a,s)=>a+(s.clockOut-s.clockIn),0);
+  document.getElementById('week-stats').innerHTML=`
+    <div class="stat-row"><span>Sessions this week</span><span class="stat-val">${my.length}</span></div>
+    <div class="stat-row"><span>Total hours</span><span class="stat-val">${fmtDur(totMs)}</span></div>
+    <div class="stat-row"><span>Average per shift</span><span class="stat-val">${comp.length?fmtDur(totMs/comp.length):'—'}</span></div>
+    <div class="stat-row"><span>Today</span><span class="stat-val" style="color:${open?'var(--green)':'var(--muted)'}">${open?'Active':'Offline'}</span></div>`;
+  const hist=state.sessions.filter(s=>s.userId===cur.id&&s.clockOut).sort((a,b)=>b.clockIn-a.clockIn).slice(0,8);
+  const hl=document.getElementById('history-list');
+  hl.innerHTML=hist.length?hist.map(s=>`
+    <div class="history-row">
+      <span class="history-date">${fmtDate(s.clockIn)} &nbsp;${new Date(s.clockIn).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})} – ${new Date(s.clockOut).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</span>
+      <span class="history-dur">${fmtDur(s.clockOut-s.clockIn)}</span>
+    </div>`).join(''):'<div class="empty-msg">No sessions yet.</div>';
+}
+
+function toggleClock() {
+  const open=openSess(), now=Date.now();
+  if (open) {
+    open.clockOut=now;
+    state.log.unshift({time:now,msg:'clocked out',who:cur.display});
+  } else {
+    state.sessions.push({id:'s'+(++state.nid),userId:cur.id,clockIn:now,clockOut:null});
+    state.log.unshift({time:now,msg:'clocked in',who:cur.display});
+  }
+  save(); renderClock();
+}
+
+function renderTasks() {
+  const vis=TASKS.filter(t=>t.assignedTo.length===0||t.assignedTo.includes(cur.id));
+  const tod=new Date().toISOString().slice(0,10);
+  document.getElementById('task-list').innerHTML=vis.length?vis.map(t=>{
+    const done=!!(state.completions[cur.id]&&state.completions[cur.id][t.id]);
+    const tags=[];
+    if(t.type==='recurring') tags.push({c:'',l:'recurring'});
+    if(t.due){
+      const diff=(new Date(t.due)-new Date(tod))/86400000;
+      if(diff<0) tags.push({c:'overdue',l:'overdue'});
+      else if(diff<=3) tags.push({c:'upcoming',l:'due '+t.due});
+      else tags.push({c:'',l:'due '+t.due});
+    }
+    if(t.assignedTo.length){
+      const names=t.assignedTo.map(id=>USERS.find(u=>u.id===id)?.display.split(' ')[0]).filter(Boolean);
+      tags.push({c:'assigned',l:names.join(', ')});
+    }
+    return `<div class="task-item">
+      <div class="chk ${done?'done':''}" onclick="toggleTask('${t.id}')">${done?'✓':''}</div>
+      <div class="task-body">
+        <div class="task-title ${done?'done':''}">${t.title}</div>
+        <div class="task-tags">${tags.map(tg=>`<span class="tag ${tg.c}">${tg.l}</span>`).join('')}</div>
+      </div></div>`;
+  }).join(''):'<div class="empty-msg">No tasks assigned.</div>';
+}
+
+function toggleTask(tid) {
+  if(!state.completions[cur.id]) state.completions[cur.id]={};
+  if(state.completions[cur.id][tid]) delete state.completions[cur.id][tid];
+  else state.completions[cur.id][tid]=true;
+  save(); renderTasks();
+}
+
+function renderSchedule() {
+  const today=new Date(); today.setHours(0,0,0,0);
+  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  let s='';
+  for(let i=-3;i<=3;i++){
+    const d=new Date(today); d.setDate(d.getDate()+i);
+    const hasTasks=TASKS.some(t=>t.due===d.toISOString().slice(0,10));
+    s+=`<div class="day-cell${i===0?' today':''}">
+      <div class="day-name">${days[d.getDay()]}</div>
+      <div class="day-num">${d.getDate()}</div>
+      ${hasTasks?'<div class="day-dot"></div>':''}
+    </div>`;
+  }
+  document.getElementById('week-strip').innerHTML=s;
+  const myTasks=TASKS.filter(t=>t.assignedTo.length===0||t.assignedTo.includes(cur.id));
+  const tod=today.toISOString().slice(0,10);
+  const overdue=myTasks.filter(t=>t.due&&t.due<tod);
+  const upcoming=myTasks.filter(t=>t.due&&t.due>=tod).sort((a,b)=>a.due.localeCompare(b.due));
+  const recur=myTasks.filter(t=>!t.due);
+  let body='';
+  if(overdue.length){
+    body+=`<div class="sched-block"><div class="sched-block-label">Overdue</div>`;
+    body+=overdue.map(t=>`<div class="sched-task"><div class="sched-dot" style="background:var(--red)"></div>${t.title}<span style="margin-left:auto;font-size:0.75rem;color:var(--red)">${t.due}</span></div>`).join('');
+    body+='</div>';
+  }
+  if(upcoming.length){
+    body+=`<div class="sched-block"><div class="sched-block-label">Upcoming</div>`;
+    body+=upcoming.map(t=>`<div class="sched-task"><div class="sched-dot" style="background:var(--accent)"></div>${t.title}<span style="margin-left:auto;font-size:0.75rem;color:var(--muted)">${t.due}</span></div>`).join('');
+    body+='</div>';
+  }
+  if(recur.length){
+    body+=`<div class="sched-block"><div class="sched-block-label">Recurring Daily</div>`;
+    body+=recur.map(t=>`<div class="sched-task"><div class="sched-dot" style="background:var(--accent2)"></div>${t.title}</div>`).join('');
+    body+='</div>';
+  }
+  document.getElementById('sched-body').innerHTML=body||'<div class="empty-msg">No tasks.</div>';
+}
+
+function renderAdmin() {
+  const d=new Date(); d.setHours(0,0,0,0);
+  const wkStart=d.getTime()-((d.getDay()||7)-1)*86400000;
+  document.getElementById('emp-grid').innerHTML=USERS.filter(u=>u.role==='employee').map(u=>{
+    const open=state.sessions.find(s=>s.userId===u.id&&!s.clockOut);
+    const wk=state.sessions.filter(s=>s.userId===u.id&&s.clockIn>=wkStart);
+    const tot=wk.filter(s=>s.clockOut).reduce((a,s)=>a+(s.clockOut-s.clockIn),0);
+    return `<div class="emp-card">
+      <div class="emp-name">${u.display}</div>
+      <div class="emp-user">@${u.username}</div>
+      <span class="status-pill ${open?'in':'out'}">
+        <span class="dot ${open?'in':'out'}" style="width:6px;height:6px;margin-right:2px"></span>
+        ${open?'Clocked In':'Clocked Out'}
+      </span>
+      <div class="emp-hours">${fmtDur(tot)} this week &middot; ${wk.length} sessions</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('payroll-body').innerHTML=USERS.filter(u=>u.role==='employee').map(u=>{
+    const wk=state.sessions.filter(s=>s.userId===u.id&&s.clockIn>=wkStart);
+    const hrs=wk.filter(s=>s.clockOut).reduce((a,s)=>a+(s.clockOut-s.clockIn),0);
+    const open=wk.some(s=>!s.clockOut);
+    return `<tr><td>${u.display}</td><td style="font-family:monospace">${fmtDur(hrs)}</td><td style="font-family:monospace">${wk.length}</td>
+      <td><span class="status-pill ${open?'in':'out'}" style="font-size:0.72rem">${open?'Active':'Offline'}</span></td></tr>`;
+  }).join('');
+
+  document.getElementById('users-body').innerHTML=USERS.map(u=>{
+    const all=state.sessions.filter(s=>s.userId===u.id);
+    return `<tr><td>${u.display}</td><td style="font-family:monospace">@${u.username}</td>
+      <td><span class="role-pill ${u.role}">${u.role}</span></td>
+      <td style="font-family:monospace">${all.length} session${all.length!==1?'s':''}</td></tr>`;
+  }).join('');
+
+  document.getElementById('log-list').innerHTML=state.log.length
+    ?state.log.slice(0,30).map(l=>`
+      <div class="log-row">
+        <span class="log-time">${new Date(l.time).toLocaleDateString('en-GB',{month:'short',day:'numeric'})} ${new Date(l.time).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</span>
+        <span class="log-msg"><span class="log-who">${l.who}</span> ${l.msg}</span>
+      </div>`).join('')
+    :'<div class="empty-msg">No activity yet.</div>';
+}
+
+function fmtMs(ms){
+  const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60;
+  return [h,m,sc].map(n=>String(n).padStart(2,'0')).join(':');
+}
+function fmtDur(ms){
+  const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000);
+  return h?`${h}h ${m}m`:`${m}m`;
+}
+function fmtDate(ts){
+  return new Date(ts).toLocaleDateString('en-GB',{month:'short',day:'numeric'});
+}
 </script>
 </body>
 </html>
