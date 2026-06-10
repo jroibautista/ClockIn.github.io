@@ -1,721 +1,566 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Clock In Service</title>
+  <title>Jessie Roi Bautista — VA & Player Support Specialist</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #0d0f14; --surface: #141720; --surface2: #1a1f2e;
-      --border: #1f2330; --accent: #4f8cff; --accent2: #a78bfa;
-      --green: #22c55e; --red: #ef4444; --yellow: #f59e0b;
-      --text: #e8eaf0; --muted: #7a7f94; --tag-bg: #1a1f2e;
+      --bg:      #0d0f14;
+      --surface: #141720;
+      --border:  #1f2330;
+      --accent:  #4f8cff;
+      --accent2: #a78bfa;
+      --text:    #e8eaf0;
+      --muted:   #7a7f94;
+      --tag-bg:  #1a1f2e;
     }
-    html, body { height: 100%; }
+    html { scroll-behavior: smooth; }
     body {
-      background: var(--bg); color: var(--text);
+      background: var(--bg);
+      color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      font-size: 15px; line-height: 1.6;
+      font-size: 16px;
+      line-height: 1.6;
     }
-    #login-screen {
-      min-height: 100vh; display: flex;
-      align-items: center; justify-content: center; padding: 2rem;
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1rem 2.5rem;
+      background: rgba(13,15,20,0.95);
+      border-bottom: 1px solid var(--border);
     }
-    .login-card {
-      width: 100%; max-width: 420px;
+    .nav-logo { font-family: monospace; font-size: 0.9rem; color: var(--accent); }
+    .nav-links { display: flex; gap: 2rem; align-items: center; }
+    .nav-links a { font-size: 0.85rem; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-resume-btn {
+      font-size: 0.8rem; font-weight: 600;
+      padding: 0.4rem 1rem;
+      background: transparent;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      border-radius: 20px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .nav-resume-btn:hover { background: var(--accent); color: #fff; }
+
+    /* PAGE SWITCHER */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex; align-items: center;
+      padding: 7rem 2rem 4rem;
+    }
+    .hero-inner { max-width: 760px; margin: 0 auto; width: 100%; }
+    .hero-eyebrow {
+      font-family: monospace; font-size: 0.78rem;
+      color: var(--accent); letter-spacing: 0.1em;
+      text-transform: uppercase; margin-bottom: 1.25rem;
+    }
+    h1 {
+      font-size: clamp(2.4rem, 6vw, 4rem);
+      font-weight: 700; line-height: 1.1;
+      letter-spacing: -0.02em; margin-bottom: 1.25rem;
+    }
+    h1 span { color: var(--accent); }
+    .hero-sub {
+      font-size: 1rem; color: var(--muted);
+      max-width: 560px; margin-bottom: 2.5rem; line-height: 1.75;
+    }
+    .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .btn {
+      display: inline-block; padding: 0.75rem 1.75rem;
+      border-radius: 6px; font-size: 0.9rem; font-weight: 600;
+      text-decoration: none; border: none; font-family: inherit; cursor: pointer;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+    .rate-badge {
+      display: inline-flex; align-items: center; gap: 0.6rem;
+      margin-top: 2rem; padding: 0.5rem 1rem;
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: 16px; padding: 2.5rem;
+      border-radius: 100px; font-family: monospace; font-size: 0.8rem; color: var(--muted);
     }
-    .login-logo {
-      font-family: monospace; font-size: 0.78rem; color: var(--accent);
+    .rate-badge strong { color: var(--accent2); }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; display: inline-block; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    /* SECTIONS */
+    section { padding: 5rem 2rem; }
+    .container { max-width: 900px; margin: 0 auto; }
+    .section-label {
+      font-family: monospace; font-size: 0.75rem; color: var(--accent);
       letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.5rem;
     }
-    .login-card h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.3rem; }
-    .login-card .sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 2rem; }
-    .field { margin-bottom: 1rem; }
-    .field label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 0.35rem; }
-    .field input {
-      width: 100%; padding: 0.65rem 0.9rem;
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: 8px; color: var(--text); font-size: 0.9rem; font-family: inherit; outline: none;
+    h2 { font-size: clamp(1.6rem, 3.5vw, 2.1rem); font-weight: 700; margin-bottom: 2.5rem; letter-spacing: -0.02em; }
+
+    /* SKILLS */
+    #skills { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.25rem; }
+    .skill-card { padding: 1.5rem; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; transition: border-color 0.2s; }
+    .skill-card:hover { border-color: var(--accent); }
+    .skill-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+    .skill-card h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.4rem; }
+    .skill-card p { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+
+    /* EXPERIENCE */
+    .timeline { position: relative; padding-left: 1.5rem; }
+    .timeline::before { content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 1px; background: var(--border); }
+    .timeline-item { position: relative; margin-bottom: 2.5rem; }
+    .timeline-item::before {
+      content: ''; position: absolute; left: -1.57rem; top: 6px;
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--accent); box-shadow: 0 0 0 3px var(--bg);
     }
-    .field input:focus { border-color: var(--accent); }
-    .login-btn {
-      width: 100%; padding: 0.75rem; background: var(--accent); color: #fff;
-      border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600;
-      font-family: inherit; cursor: pointer; margin-top: 0.5rem;
+    .tl-meta { font-family: monospace; font-size: 0.75rem; color: var(--accent2); margin-bottom: 0.3rem; }
+    .tl-company { font-size: 0.8rem; color: var(--muted); margin-bottom: 0.25rem; }
+    .tl-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.35rem; }
+    .tl-desc { font-size: 0.88rem; color: var(--muted); }
+
+    /* PROJECTS */
+    #projects { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; }
+    .project-card { padding: 1.75rem; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; transition: border-color 0.2s; }
+    .project-card:hover { border-color: var(--accent2); }
+    .project-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .project-card p { font-size: 0.87rem; color: var(--muted); margin-bottom: 1rem; line-height: 1.65; }
+    .tag-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .tag { font-family: monospace; font-size: 0.72rem; padding: 0.2rem 0.55rem; background: var(--tag-bg); border: 1px solid var(--border); border-radius: 4px; color: var(--muted); }
+
+    /* CONTACT */
+    .contact-box {
+      text-align: center; padding: 4rem 2rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
     }
-    .login-btn:hover { opacity: 0.9; }
-    .login-error { color: var(--red); font-size: 0.82rem; margin-top: 0.6rem; display: none; }
-    .creds-box {
-      margin-top: 1.5rem; padding: 1rem;
-      background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+    .contact-box h2 { margin-bottom: 0.75rem; }
+    .contact-box p { color: var(--muted); margin-bottom: 2rem; font-size: 0.95rem; }
+    .contact-links { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+
+    /* FOOTER */
+    footer {
+      text-align: center; padding: 2rem;
+      font-family: monospace; font-size: 0.75rem; color: var(--muted);
+      border-top: 1px solid var(--border);
     }
-    .creds-title {
-      font-family: monospace; font-size: 0.68rem; color: var(--accent2);
-      letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.75rem;
+
+    /* ── RESUME PAGE ── */
+    #resume-page {
+      min-height: 100vh;
+      padding: 7rem 2rem 4rem;
+      background: var(--bg);
     }
-    .cred-row {
+    .resume-header {
+      max-width: 860px; margin: 0 auto 3rem;
+      display: flex; justify-content: space-between; align-items: flex-end;
+      flex-wrap: wrap; gap: 1rem;
+    }
+    .resume-header h2 { margin-bottom: 0; font-size: 1.5rem; }
+    .resume-header p { color: var(--muted); font-size: 0.85rem; margin-top: 0.25rem; }
+    .resume-dl {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.6rem 1.25rem;
+      background: var(--accent); color: #fff;
+      border-radius: 6px; font-size: 0.85rem; font-weight: 600;
+      text-decoration: none; transition: background 0.2s;
+    }
+    .resume-dl:hover { background: #3a78f0; }
+
+    /* ROCKET RESUME CARD */
+    .resume-card {
+      max-width: 860px; margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Stars bg */
+    .resume-card::before {
+      content: '✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦';
+      position: absolute; top: 0; left: 0; right: 0;
+      font-size: 0.6rem; color: rgba(167,139,250,0.15);
+      letter-spacing: 1.5rem; padding: 0.5rem 1rem;
+      white-space: nowrap; overflow: hidden;
+      pointer-events: none;
+    }
+
+    .resume-card-header {
+      padding: 2.5rem 2.5rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      background: linear-gradient(135deg, #141720 60%, #1a1535 100%);
+    }
+    .resume-name {
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 700; letter-spacing: -0.02em;
+      margin-bottom: 0.3rem;
+    }
+    .resume-name span { color: var(--accent2); }
+    .resume-title-line {
+      font-size: 0.9rem; color: var(--accent);
+      font-family: monospace; letter-spacing: 0.05em;
+      margin-bottom: 1rem;
+    }
+    .resume-contacts {
+      display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem;
+      font-size: 0.8rem; color: var(--muted);
+    }
+    .resume-contacts span { display: flex; align-items: center; gap: 0.3rem; }
+
+    /* rocket deco */
+    .rocket-deco {
+      position: absolute; right: 2rem; top: 50%; transform: translateY(-50%);
+      font-size: 4rem; opacity: 0.18;
+      animation: float 4s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes float { 0%,100%{transform:translateY(-50%) rotate(-20deg)} 50%{transform:translateY(calc(-50% - 10px)) rotate(-15deg)} }
+
+    .resume-body { padding: 2rem 2.5rem; }
+    .resume-section { margin-bottom: 2rem; }
+    .resume-section-title {
+      font-family: monospace; font-size: 0.72rem;
+      color: var(--accent); letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1rem;
       display: flex; align-items: center; gap: 0.5rem;
-      font-family: monospace; font-size: 0.78rem;
-      cursor: pointer; color: var(--muted);
-      padding: 0.3rem 0.5rem; border-radius: 5px; margin-bottom: 0.2rem;
     }
-    .cred-row:hover { background: var(--surface2); color: var(--text); }
-    .cred-sep { color: var(--border); }
-    .cred-role {
-      font-size: 0.62rem; padding: 0.1rem 0.4rem; border-radius: 3px;
-      font-weight: 700; letter-spacing: 0.04em;
+    .resume-section-title::before { content: '▸'; color: var(--accent2); font-size: 0.8rem; }
+    .resume-profile-text { font-size: 0.88rem; color: var(--muted); line-height: 1.75; }
+
+    /* resume experience */
+    .r-job { margin-bottom: 1.25rem; }
+    .r-job-top {
+      display: flex; justify-content: space-between; align-items: baseline;
+      flex-wrap: wrap; gap: 0.25rem; margin-bottom: 0.15rem;
     }
-    .cred-role.admin { background: rgba(79,140,255,0.15); color: var(--accent); }
-    .cred-role.emp   { background: rgba(167,139,250,0.15); color: var(--accent2); }
-    .cred-name { margin-left: auto; font-size: 0.7rem; color: var(--muted); }
-    #app { display: none; flex-direction: column; min-height: 100vh; }
-    #topbar {
-      position: sticky; top: 0; z-index: 50;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0.7rem 1.5rem;
-      background: rgba(13,15,20,0.97); border-bottom: 1px solid var(--border);
+    .r-job-title { font-size: 0.93rem; font-weight: 600; color: var(--text); }
+    .r-job-date { font-family: monospace; font-size: 0.75rem; color: var(--accent2); }
+    .r-job-company { font-size: 0.8rem; color: var(--muted); margin-bottom: 0.4rem; }
+    .r-bullets { list-style: none; padding: 0; }
+    .r-bullets li {
+      font-size: 0.83rem; color: var(--muted); line-height: 1.6;
+      padding-left: 1rem; position: relative; margin-bottom: 0.15rem;
     }
-    .tb-left { display: flex; align-items: center; gap: 0.9rem; }
-    .tb-logo { font-family: monospace; font-size: 0.85rem; color: var(--accent); font-weight: 700; }
-    .tb-name { font-size: 0.88rem; font-weight: 600; }
-    .tb-role-pill {
-      font-size: 0.62rem; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700; letter-spacing: 0.04em;
+    .r-bullets li::before { content: '→'; position: absolute; left: 0; color: var(--accent); font-size: 0.75rem; top: 0.05rem; }
+
+    /* skills grid in resume */
+    .r-skills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 2rem; }
+    .r-skill-row { font-size: 0.83rem; color: var(--muted); line-height: 1.6; }
+    .r-skill-row strong { color: var(--text); font-weight: 600; }
+
+    /* education */
+    .r-edu-top { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.25rem; }
+    .r-edu-degree { font-size: 0.93rem; font-weight: 600; }
+    .r-edu-date { font-family: monospace; font-size: 0.75rem; color: var(--accent2); }
+    .r-edu-school { font-size: 0.83rem; color: var(--muted); }
+
+    /* orbit dots decoration */
+    .orbit-dots {
+      display: flex; gap: 0.4rem; margin-bottom: 1.5rem;
     }
-    .tb-role-pill.admin    { background: rgba(79,140,255,0.15); color: var(--accent); }
-    .tb-role-pill.employee { background: rgba(167,139,250,0.15); color: var(--accent2); }
-    .tb-right { display: flex; align-items: center; gap: 1.25rem; }
-    #tb-clock { font-family: monospace; font-size: 0.85rem; color: var(--muted); }
-    .signout-btn {
-      padding: 0.32rem 0.85rem; background: transparent;
-      border: 1px solid var(--border); border-radius: 6px;
-      color: var(--muted); font-size: 0.8rem; font-family: inherit; cursor: pointer;
+    .orbit-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent); opacity: 0.4;
     }
-    .signout-btn:hover { border-color: var(--red); color: var(--red); }
-    #tab-bar {
-      display: flex; border-bottom: 1px solid var(--border);
-      padding: 0 1.5rem; background: var(--surface); overflow-x: auto; flex-shrink: 0;
+    .orbit-dot:nth-child(2) { background: var(--accent2); opacity: 0.6; }
+    .orbit-dot:nth-child(3) { background: #22c55e; opacity: 0.5; }
+
+    @media (max-width: 600px) {
+      nav { padding: 1rem 1.25rem; }
+      .nav-links { gap: 1rem; }
+      section { padding: 3.5rem 1.25rem; }
+      #resume-page { padding: 6rem 1rem 3rem; }
+      .resume-card-header { padding: 1.5rem; }
+      .resume-body { padding: 1.5rem; }
+      .rocket-deco { display: none; }
+      .r-skills-grid { grid-template-columns: 1fr; }
     }
-    .tab-btn {
-      padding: 0.85rem 1.1rem; background: none; border: none;
-      color: var(--muted); font-size: 0.87rem; font-family: inherit;
-      cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap;
-      display: flex; align-items: center; gap: 0.45rem;
-    }
-    .tab-btn:hover { color: var(--text); }
-    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
-    .admin-badge {
-      font-size: 0.58rem; padding: 0.1rem 0.35rem;
-      background: rgba(79,140,255,0.12); color: var(--accent);
-      border: 1px solid rgba(79,140,255,0.25); border-radius: 3px;
-      font-weight: 700; letter-spacing: 0.04em;
-    }
-    .tab-pane { display: none; padding: 1.75rem 1.5rem; max-width: 960px; margin: 0 auto; width: 100%; }
-    .tab-pane.active { display: block; }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
-    @media(max-width:600px) { .grid-2 { grid-template-columns: 1fr; } }
-    .card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; padding: 1.4rem;
-    }
-    .card-label {
-      font-family: monospace; font-size: 0.7rem; color: var(--accent);
-      letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.75rem;
-    }
-    .big-clock { font-family: monospace; font-size: 2.6rem; font-weight: 700; letter-spacing: -0.02em; }
-    .big-date  { font-size: 0.82rem; color: var(--muted); margin-top: 0.2rem; }
-    .status-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; }
-    .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
-    .dot.in  { background: var(--green); box-shadow: 0 0 6px var(--green); }
-    .dot.out { background: var(--muted); }
-    .status-label { font-size: 0.9rem; font-weight: 600; }
-    .timer { font-family: monospace; font-size: 1.5rem; margin: 0.5rem 0 0.2rem; }
-    .timer-sub { font-size: 0.78rem; color: var(--muted); margin-bottom: 1rem; }
-    .clock-btn {
-      width: 100%; padding: 0.7rem; border: none; border-radius: 8px;
-      font-size: 0.9rem; font-weight: 600; font-family: inherit; cursor: pointer;
-    }
-    .clock-btn.in  { background: var(--green); color: #fff; }
-    .clock-btn.out { background: var(--red); color: #fff; }
-    .stat-row { display: flex; justify-content: space-between; padding: 0.35rem 0; font-size: 0.85rem; border-bottom: 1px solid var(--border); }
-    .stat-row:last-child { border-bottom: none; }
-    .stat-val { font-weight: 600; font-family: monospace; color: var(--accent); }
-    .section-head { font-size: 0.88rem; font-weight: 700; margin: 1.25rem 0 0.75rem; }
-    .history-list { display: flex; flex-direction: column; gap: 0.45rem; }
-    .history-row {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 0.55rem 0.8rem;
-      background: var(--surface2); border: 1px solid var(--border); border-radius: 7px;
-      font-size: 0.82rem;
-    }
-    .history-date { color: var(--muted); font-family: monospace; font-size: 0.76rem; }
-    .history-dur  { font-family: monospace; font-weight: 600; color: var(--accent); }
-    .task-list { display: flex; flex-direction: column; gap: 0.5rem; }
-    .task-item {
-      display: flex; gap: 0.75rem; align-items: flex-start;
-      padding: 0.9rem 1rem;
-      background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
-    }
-    .chk {
-      width: 18px; height: 18px; border-radius: 4px;
-      border: 2px solid var(--border); background: none;
-      cursor: pointer; flex-shrink: 0; margin-top: 2px;
-      display: flex; align-items: center; justify-content: center; font-size: 11px; color: #fff;
-    }
-    .chk.done { background: var(--accent); border-color: var(--accent); }
-    .task-body { flex: 1; }
-    .task-title { font-size: 0.88rem; font-weight: 500; }
-    .task-title.done { text-decoration: line-through; color: var(--muted); }
-    .task-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.35rem; }
-    .tag {
-      font-family: monospace; font-size: 0.68rem; padding: 0.1rem 0.45rem;
-      background: var(--tag-bg); border: 1px solid var(--border); border-radius: 3px; color: var(--muted);
-    }
-    .tag.upcoming { border-color: var(--yellow); color: var(--yellow); }
-    .tag.overdue  { border-color: var(--red);    color: var(--red); }
-    .tag.assigned { border-color: rgba(79,140,255,0.3); color: var(--accent); }
-    .week-strip { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; overflow-x: auto; padding-bottom: 0.25rem; }
-    .day-cell {
-      flex: 1; min-width: 76px; text-align: center;
-      padding: 0.7rem 0.4rem; background: var(--surface);
-      border: 1px solid var(--border); border-radius: 10px;
-    }
-    .day-cell.today { border-color: var(--accent); }
-    .day-name { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
-    .day-num  { font-size: 1.1rem; font-weight: 700; margin-top: 0.15rem; }
-    .day-dot  { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); margin: 0.35rem auto 0; }
-    .sched-block { margin-bottom: 1.5rem; }
-    .sched-block-label {
-      font-family: monospace; font-size: 0.7rem; color: var(--muted);
-      letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.6rem;
-    }
-    .sched-task {
-      display: flex; gap: 0.65rem; align-items: center;
-      padding: 0.6rem 0.85rem; background: var(--surface);
-      border: 1px solid var(--border); border-radius: 8px; margin-bottom: 0.4rem; font-size: 0.85rem;
-    }
-    .sched-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-    .admin-section { margin-bottom: 2rem; }
-    .admin-section-hd {
-      display: flex; align-items: center; gap: 0.65rem;
-      margin-bottom: 1rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--border);
-    }
-    .admin-section-title { font-size: 1rem; font-weight: 700; }
-    .admin-only-pill {
-      font-size: 0.6rem; padding: 0.15rem 0.5rem;
-      background: rgba(79,140,255,0.1); color: var(--accent);
-      border: 1px solid rgba(79,140,255,0.25); border-radius: 20px;
-      font-weight: 700; letter-spacing: 0.05em;
-    }
-    .emp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px,1fr)); gap: 0.75rem; }
-    .emp-card {
-      padding: 1rem; background: var(--surface2);
-      border: 1px solid var(--border); border-radius: 10px;
-    }
-    .emp-name { font-size: 0.88rem; font-weight: 600; margin-bottom: 0.15rem; }
-    .emp-user { font-family: monospace; font-size: 0.73rem; color: var(--muted); margin-bottom: 0.5rem; }
-    .status-pill {
-      display: inline-flex; align-items: center; gap: 0.3rem;
-      padding: 0.18rem 0.55rem; border-radius: 20px; font-size: 0.73rem; font-weight: 600;
-    }
-    .status-pill.in  { background: rgba(34,197,94,0.1);  color: var(--green); }
-    .status-pill.out { background: rgba(122,127,148,0.1); color: var(--muted); }
-    .emp-hours { font-family: monospace; font-size: 0.76rem; color: var(--accent); margin-top: 0.4rem; }
-    .data-table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
-    .data-table th {
-      text-align: left; padding: 0.5rem 0.85rem;
-      font-size: 0.7rem; color: var(--muted); font-weight: 600;
-      letter-spacing: 0.06em; text-transform: uppercase; border-bottom: 1px solid var(--border);
-    }
-    .data-table td { padding: 0.65rem 0.85rem; border-bottom: 1px solid var(--border); }
-    .data-table tr:last-child td { border-bottom: none; }
-    .data-table tr:hover td { background: var(--surface2); }
-    .role-pill {
-      font-size: 0.68rem; padding: 0.12rem 0.45rem; border-radius: 4px; font-weight: 600;
-    }
-    .role-pill.admin    { background: rgba(79,140,255,0.15); color: var(--accent); }
-    .role-pill.employee { background: rgba(167,139,250,0.15); color: var(--accent2); }
-    .log-list { display: flex; flex-direction: column; gap: 0.25rem; }
-    .log-row {
-      display: flex; gap: 0.75rem; padding: 0.45rem 0.6rem;
-      font-size: 0.81rem; border-radius: 6px;
-    }
-    .log-row:hover { background: var(--surface2); }
-    .log-time { font-family: monospace; color: var(--muted); font-size: 0.74rem; flex-shrink: 0; white-space: nowrap; }
-    .log-msg  { color: var(--text); }
-    .log-who  { color: var(--accent2); font-weight: 500; }
-    .page-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 1.5rem; }
-    .empty-msg { font-size: 0.85rem; color: var(--muted); padding: 1rem 0; }
   </style>
 </head>
 <body>
 
-<div id="login-screen">
-  <div class="login-card">
-    <div class="login-logo">Clock In Service</div>
-    <h1>Welcome back</h1>
-    <p class="sub">Sign in to your account to continue</p>
-    <div class="field">
-      <label>Username</label>
-      <input type="text" id="li-user" placeholder="username" autocomplete="off"
-        onkeydown="if(event.key==='Enter')doLogin()"/>
-    </div>
-    <div class="field">
-      <label>Password</label>
-      <input type="password" id="li-pass" placeholder="password"
-        onkeydown="if(event.key==='Enter')doLogin()"/>
-    </div>
-    <button class="login-btn" onclick="doLogin()">Sign In</button>
-    <div class="login-error" id="login-err">Invalid username or password.</div>
-    <div style="margin-top:1.25rem;padding:0.85rem 1rem;background:rgba(167,139,250,0.06);border:1px solid rgba(167,139,250,0.2);border-radius:10px;font-size:0.8rem;color:var(--muted);line-height:1.6;">
-      <span style="color:var(--accent2);font-weight:600;">⚠ Demo Version</span> — This is a static preview. Some features from the full system are not available here, including TOTP 2FA, avatar uploads, name-change requests, admin task creation/editing, news hub, real-time disconnect detection, and IP lockout management. Data resets when browser storage is cleared.
-    </div>
-    <div class="creds-box">
-      <div class="creds-title">Demo credentials — click to fill</div>
-      <div class="cred-row" onclick="fill('admin','admin123')">
-        <span class="cred-role admin">ADMIN</span>
-        <span>admin</span><span class="cred-sep">/</span><span>admin123</span>
-        <span class="cred-name">Jessie Roi Bautista</span>
-      </div>
-      <div class="cred-row" onclick="fill('sarah_j','pass123')">
-        <span class="cred-role emp">EMP</span>
-        <span>sarah_j</span><span class="cred-sep">/</span><span>pass123</span>
-        <span class="cred-name">Sarah Johnson</span>
-      </div>
-      <div class="cred-row" onclick="fill('mike_d','pass123')">
-        <span class="cred-role emp">EMP</span>
-        <span>mike_d</span><span class="cred-sep">/</span><span>pass123</span>
-        <span class="cred-name">Mike Davies</span>
-      </div>
-      <div class="cred-row" onclick="fill('luna_k','pass123')">
-        <span class="cred-role emp">EMP</span>
-        <span>luna_k</span><span class="cred-sep">/</span><span>pass123</span>
-        <span class="cred-name">Luna Kim</span>
-      </div>
-      <div class="cred-row" onclick="fill('rex_b','pass123')">
-        <span class="cred-role emp">EMP</span>
-        <span>rex_b</span><span class="cred-sep">/</span><span>pass123</span>
-        <span class="cred-name">Rex Brown</span>
-      </div>
-    </div>
+<nav>
+  <span class="nav-logo">roi.dev</span>
+  <div class="nav-links">
+    <a href="#" onclick="showPage('portfolio')">Portfolio</a>
+    <a href="#" onclick="showPage('resume')" class="nav-resume-btn">🚀 Resume</a>
   </div>
-</div>
+</nav>
 
-<div id="app">
-  <div id="topbar">
-    <div class="tb-left">
-      <span class="tb-logo">Clock In</span>
-      <span class="tb-name" id="tb-name"></span>
-      <span class="tb-role-pill" id="tb-role"></span>
-    </div>
-    <div class="tb-right">
-      <span id="tb-clock"></span>
-      <button class="signout-btn" onclick="signOut()">Sign Out</button>
-    </div>
-  </div>
-  <div id="tab-bar">
-    <button class="tab-btn active" id="tabbtn-clock"    onclick="switchTab('clock')">Clock</button>
-    <button class="tab-btn"        id="tabbtn-tasks"    onclick="switchTab('tasks')">Tasks</button>
-    <button class="tab-btn"        id="tabbtn-schedule" onclick="switchTab('schedule')">Schedule</button>
-    <button class="tab-btn"        id="tabbtn-admin"    onclick="switchTab('admin')" style="display:none">
-      Admin <span class="admin-badge">ADMIN ONLY</span>
-    </button>
-  </div>
+<!-- ═══════════════ PORTFOLIO PAGE ═══════════════ -->
+<div id="portfolio-page" class="page active">
 
-  <div id="pane-clock" class="tab-pane active">
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-label">Current Time</div>
-        <div class="big-clock" id="live-clock">00:00:00</div>
-        <div class="big-date"  id="live-date"></div>
+  <section class="hero">
+    <div class="hero-inner">
+      <p class="hero-eyebrow">Available for freelance work</p>
+      <h1>Jessie Roi Bautista<br><span>VA & Player Support</span></h1>
+      <p class="hero-sub">CS graduate from STI Ortigas Cainta. 5+ years working with AAA game studios across player support, community moderation, content creation, and team management. I work fast, communicate well, and know how to get things done.</p>
+      <div class="hero-actions">
+        <a href="#contact" class="btn btn-primary">Get in Touch</a>
+        <a href="#experience" class="btn btn-outline">View Experience</a>
+        <a href="#" onclick="showPage('resume')" class="btn btn-outline">🚀 View Resume</a>
       </div>
-      <div class="card">
-        <div class="card-label">Your Status</div>
-        <div class="status-row">
-          <span class="dot" id="status-dot"></span>
-          <span class="status-label" id="status-label"></span>
+      <div class="rate-badge">
+        <span class="dot"></span>
+        &nbsp;Available now &mdash; <strong>$5/hr</strong> &nbsp;&middot;&nbsp; 40hrs/week &nbsp;&middot;&nbsp; Open to long-term
+      </div>
+    </div>
+  </section>
+
+  <section id="skills">
+    <div class="container">
+      <p class="section-label">What I do</p>
+      <h2>Skills & Tools</h2>
+      <div class="skills-grid">
+        <div class="skill-card"><div class="skill-icon">🎮</div><h3>Player Support & Moderation</h3><p>T1–T3 player engagement across AAA titles. Escalations, community health, and trust management at scale.</p></div>
+        <div class="skill-card"><div class="skill-icon">📋</div><h3>Project & Team Management</h3><p>Managed multiple teams simultaneously above team lead level. On deadline, organized, and results-driven.</p></div>
+        <div class="skill-card"><div class="skill-icon">✍️</div><h3>Content Creation & SEO</h3><p>YouTube & TikTok guides with AI-assisted video editing. Google Trends research and discoverability optimization.</p></div>
+        <div class="skill-card"><div class="skill-icon">🤖</div><h3>AI-Powered Workflows</h3><p>Proficient with Claude, ChatGPT, and NotebookLM — used daily as real productivity tools.</p></div>
+        <div class="skill-card"><div class="skill-icon">🛠️</div><h3>Tools & Tech</h3><p>WordPress · Google Sheets · Discord Management · Basic Dev · SEO Research</p></div>
+        <div class="skill-card"><div class="skill-icon">💻</div><h3>CS Background</h3><p>Computer Science graduate from STI Ortigas Cainta. Built an in-house clock-in tracker, comfortable with data and automation.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="experience">
+    <div class="container">
+      <p class="section-label">Work History</p>
+      <h2>Experience</h2>
+      <div class="timeline">
+        <div class="timeline-item">
+          <p class="tl-meta">Oct 2024 — Jun 2026</p>
+          <p class="tl-company">TheriaGames</p>
+          <p class="tl-title">Project Manager / Content Creator</p>
+          <p class="tl-desc">Managed multiple teams above team lead level. Created guides and content for YouTube & TikTok, handled Discord, WordPress, SEO research, Google Sheets, and built an in-house clock-in tracker.</p>
         </div>
-        <div class="timer" id="timer">00:00:00</div>
-        <div class="timer-sub" id="timer-sub"></div>
-        <button class="clock-btn" id="clock-btn" onclick="toggleClock()"></button>
+        <div class="timeline-item">
+          <p class="tl-meta">Dec 2023 — Jul 2025</p>
+          <p class="tl-company">Scopely (via Keywords Studios Manila)</p>
+          <p class="tl-title">Moderator — Monopoly Go!</p>
+          <p class="tl-desc">Community moderation for one of the most downloaded mobile titles. Maintained community health and player trust.</p>
+        </div>
+        <div class="timeline-item">
+          <p class="tl-meta">Jan 2022 — Dec 2024</p>
+          <p class="tl-company">Amazon Games (via Keywords Studios Manila)</p>
+          <p class="tl-title">T3 Player Engagement — New World / Lost Ark</p>
+          <p class="tl-desc">Tier 3 player support for two major live-service titles. Handled complex escalations and high-stakes player issues.</p>
+        </div>
+        <div class="timeline-item">
+          <p class="tl-meta">May 2021 — Jan 2022</p>
+          <p class="tl-company">343 Industries (via Keywords Studios Manila)</p>
+          <p class="tl-title">Player Engagement — Halo</p>
+          <p class="tl-desc">Player support for the Halo franchise during the Halo Infinite launch window.</p>
+        </div>
+        <div class="timeline-item">
+          <p class="tl-meta">Jan 2020 — May 2021</p>
+          <p class="tl-company">Playdemic (via Keywords Studios Manila)</p>
+          <p class="tl-title">Player Engagement</p>
+          <p class="tl-desc">Built foundational skills in ticketing, escalation handling, and player communication.</p>
+        </div>
       </div>
     </div>
-    <div style="height:1.25rem"></div>
-    <div class="card">
-      <div class="card-label">This Week</div>
-      <div id="week-stats"></div>
-      <div class="section-head">Recent Sessions</div>
-      <div class="history-list" id="history-list"></div>
+  </section>
+
+  <section id="projects">
+    <div class="container">
+      <p class="section-label">What I've built</p>
+      <h2>Projects</h2>
+      <div class="projects-grid">
+        <div class="project-card">
+          <h3>In-House Clock-In Tracker</h3>
+          <p>Built a custom attendance and time-tracking tool for the team at TheriaGames. Replaced manual logging and reduced admin overhead.</p>
+          <div class="tag-row"><span class="tag">Dev</span><span class="tag">Google Sheets</span><span class="tag">Automation</span></div>
+        </div>
+        <div class="project-card">
+          <h3>Content & Guide Creation</h3>
+          <p>Produced game guides and content for YouTube and TikTok using AI-assisted video editing and SEO-informed research.</p>
+          <div class="tag-row"><span class="tag">YouTube</span><span class="tag">TikTok</span><span class="tag">SEO</span><span class="tag">AI Tools</span></div>
+        </div>
+        <div class="project-card">
+          <h3>Multi-Team Management</h3>
+          <p>Led and coordinated multiple teams as Project Manager, handling workflows, deadlines, and deliverables across departments.</p>
+          <div class="tag-row"><span class="tag">Project Management</span><span class="tag">Discord</span><span class="tag">Leadership</span></div>
+        </div>
+      </div>
+      <p style="margin-top:1.5rem; font-size:0.85rem; color:var(--muted);">More projects coming soon.</p>
     </div>
+  </section>
+
+  <section id="contact">
+    <div class="container">
+      <div class="contact-box">
+        <p class="section-label" style="margin-bottom:0.5rem;">Let's work together</p>
+        <h2>Available for Hire</h2>
+        <p>$5/hr &middot; 40 hours/week &middot; Open to long-term contracts<br>Player support, VA work, moderation, content, project management — I do it all.</p>
+        <div class="contact-links">
+          <a href="https://github.com/jroibautista" class="btn btn-outline" target="_blank">GitHub</a>
+          <a href="mailto:bautistajessieroi@gmail.com" class="btn btn-primary">Email Me</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>© 2026 Jessie Roi Bautista &mdash; Built with GitHub Pages</p>
+  </footer>
+
+</div><!-- end portfolio-page -->
+
+
+<!-- ═══════════════ RESUME PAGE ═══════════════ -->
+<div id="resume-page" class="page">
+
+  <div class="resume-header">
+    <div>
+      <p class="section-label">Curriculum Vitae</p>
+      <h2>My Resume</h2>
+      <p>Last updated June 2026 &nbsp;·&nbsp; Available for remote work</p>
+    </div>
+    <a href="Jessie_Roi_Bautista_Resume.pdf" download class="resume-dl">⬇ Download PDF</a>
   </div>
 
-  <div id="pane-tasks" class="tab-pane">
-    <div class="page-title">Tasks</div>
-    <div class="task-list" id="task-list"></div>
-  </div>
+  <div class="resume-card">
+    <div class="resume-card-header">
+      <div class="orbit-dots"><div class="orbit-dot"></div><div class="orbit-dot"></div><div class="orbit-dot"></div></div>
+      <div class="resume-name">Jessie Roi <span>Bautista</span></div>
+      <div class="resume-title-line">Virtual Assistant &nbsp;·&nbsp; Administrative & Operations Specialist &nbsp;·&nbsp; Player Support</div>
+      <div class="resume-contacts">
+        <span>📞 09397264381 / 09273258959</span>
+        <span>✉️ bautistajessieroi@gmail.com</span>
+        <span>🌐 jroibautista.github.io</span>
+        <span>📍 Silang, Cavite, PH</span>
+      </div>
+      <div class="rocket-deco">🚀</div>
+    </div>
 
-  <div id="pane-schedule" class="tab-pane">
-    <div class="page-title">Schedule</div>
-    <div class="week-strip" id="week-strip"></div>
-    <div id="sched-body"></div>
-  </div>
+    <div class="resume-body">
 
-  <div id="pane-admin" class="tab-pane">
-    <div class="page-title">Admin Panel</div>
-    <div class="admin-section">
-      <div class="admin-section-hd">
-        <span class="admin-section-title">Employee Status</span>
-        <span class="admin-only-pill">ADMIN ONLY</span>
+      <!-- PROFILE -->
+      <div class="resume-section">
+        <div class="resume-section-title">Profile</div>
+        <p class="resume-profile-text">CS graduate with 6+ years of experience in customer support, community moderation, content creation, and administrative operations. Worked with AAA game studios including 343 Industries, Amazon Games, and Scopely, progressing from frontline support to managing multiple teams above team lead level. Reliable, self-directed, and available full-time for remote work.</p>
       </div>
-      <div class="emp-grid" id="emp-grid"></div>
-    </div>
-    <div class="admin-section">
-      <div class="admin-section-hd">
-        <span class="admin-section-title">Payroll Summary — This Week</span>
-        <span class="admin-only-pill">ADMIN ONLY</span>
+
+      <!-- EXPERIENCE -->
+      <div class="resume-section">
+        <div class="resume-section-title">Experience</div>
+
+        <div class="r-job">
+          <div class="r-job-top">
+            <span class="r-job-title">Project Manager / VA</span>
+            <span class="r-job-date">Oct 2024 — Jun 2026</span>
+          </div>
+          <div class="r-job-company">TheriaGames &nbsp;·&nbsp; Remote</div>
+          <ul class="r-bullets">
+            <li>Managed multiple teams simultaneously above team lead level; coordinated schedules, workflows, and deliverables</li>
+            <li>Built an in-house clock-in and attendance tracker to replace manual logging</li>
+            <li>Maintained Google Sheets data systems and generated team performance reports</li>
+            <li>Created guides and video content for YouTube and TikTok with AI-assisted editing</li>
+            <li>Managed Discord communities, WordPress site, and SEO research via Google Trends</li>
+            <li>Utilized Claude, ChatGPT, and NotebookLM daily to streamline operations and content production</li>
+          </ul>
+        </div>
+
+        <div class="r-job">
+          <div class="r-job-top">
+            <span class="r-job-title">Moderator — Monopoly Go! (Scopely)</span>
+            <span class="r-job-date">Dec 2023 — Jul 2025</span>
+          </div>
+          <div class="r-job-company">Keywords Studios Manila</div>
+          <ul class="r-bullets">
+            <li>Moderated one of the most downloaded mobile titles globally</li>
+            <li>Maintained community health, enforced guidelines, and handled player escalations</li>
+          </ul>
+        </div>
+
+        <div class="r-job">
+          <div class="r-job-top">
+            <span class="r-job-title">T3 Player Engagement — New World / Lost Ark</span>
+            <span class="r-job-date">Jan 2022 — Dec 2024</span>
+          </div>
+          <div class="r-job-company">Keywords Studios Manila &nbsp;·&nbsp; Amazon Games</div>
+          <ul class="r-bullets">
+            <li>Handled Tier 3 support — the most complex escalations across two major live-service titles</li>
+            <li>Maintained documentation, processed tickets, and coordinated with internal teams</li>
+          </ul>
+        </div>
+
+        <div class="r-job">
+          <div class="r-job-top">
+            <span class="r-job-title">Player Engagement — Halo</span>
+            <span class="r-job-date">May 2021 — Jan 2022</span>
+          </div>
+          <div class="r-job-company">Keywords Studios Manila &nbsp;·&nbsp; 343 Industries</div>
+          <ul class="r-bullets">
+            <li>Provided player support during the Halo Infinite launch window under high-volume conditions</li>
+          </ul>
+        </div>
+
+        <div class="r-job">
+          <div class="r-job-top">
+            <span class="r-job-title">Player Engagement — Playdemic</span>
+            <span class="r-job-date">Jan 2020 — May 2021</span>
+          </div>
+          <div class="r-job-company">Keywords Studios Manila</div>
+          <ul class="r-bullets">
+            <li>Built foundational skills in ticketing, escalation handling, and player communication</li>
+          </ul>
+        </div>
       </div>
-      <div class="card" style="padding:0;overflow:hidden">
-        <table class="data-table">
-          <thead><tr><th>Employee</th><th>Total Hours</th><th>Sessions</th><th>Status</th></tr></thead>
-          <tbody id="payroll-body"></tbody>
-        </table>
+
+      <!-- SKILLS -->
+      <div class="resume-section">
+        <div class="resume-section-title">Skills & Tools</div>
+        <div class="r-skills-grid">
+          <div class="r-skill-row"><strong>Support & Ops:</strong> T1–T3 Player Support, Moderation, Scheduling, Data Entry</div>
+          <div class="r-skill-row"><strong>Tools:</strong> Google Sheets, MS Excel, WordPress, Discord, NotebookLM</div>
+          <div class="r-skill-row"><strong>AI:</strong> Claude, ChatGPT, NotebookLM — daily workflow integration</div>
+          <div class="r-skill-row"><strong>Content:</strong> YouTube & TikTok editing, SEO research, guide writing</div>
+          <div class="r-skill-row"><strong>Dev:</strong> Basic web dev, in-house tool building, process automation</div>
+          <div class="r-skill-row"><strong>Management:</strong> Multi-team coordination, project tracking, reporting</div>
+        </div>
       </div>
-    </div>
-    <div class="admin-section">
-      <div class="admin-section-hd">
-        <span class="admin-section-title">User Management</span>
-        <span class="admin-only-pill">ADMIN ONLY</span>
+
+      <!-- EDUCATION -->
+      <div class="resume-section">
+        <div class="resume-section-title">Education</div>
+        <div class="r-edu-top">
+          <span class="r-edu-degree">Bachelor of Science in Computer Science</span>
+          <span class="r-edu-date">Dec 2015 — Dec 2019</span>
+        </div>
+        <div class="r-edu-school">STI College Ortigas-Cainta</div>
       </div>
-      <div class="card" style="padding:0;overflow:hidden">
-        <table class="data-table">
-          <thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Total Sessions</th></tr></thead>
-          <tbody id="users-body"></tbody>
-        </table>
-      </div>
-    </div>
-    <div class="admin-section">
-      <div class="admin-section-hd">
-        <span class="admin-section-title">Activity Log</span>
-        <span class="admin-only-pill">ADMIN ONLY</span>
-      </div>
-      <div class="card">
-        <div class="log-list" id="log-list"></div>
-      </div>
-    </div>
-  </div>
-</div>
+
+    </div><!-- end resume-body -->
+  </div><!-- end resume-card -->
+
+  <footer style="margin-top:3rem;">
+    <p>© 2026 Jessie Roi Bautista &mdash; <a href="#" onclick="showPage('portfolio')" style="color:var(--accent); text-decoration:none;">← Back to Portfolio</a></p>
+  </footer>
+
+</div><!-- end resume-page -->
 
 <script>
-const USERS = [
-  { id:'u1', username:'admin',   password:'admin123', display:'Jessie Roi Bautista', role:'admin' },
-  { id:'u2', username:'sarah_j', password:'pass123',  display:'Sarah Johnson',       role:'employee' },
-  { id:'u3', username:'mike_d',  password:'pass123',  display:'Mike Davies',         role:'employee' },
-  { id:'u4', username:'luna_k',  password:'pass123',  display:'Luna Kim',            role:'employee' },
-  { id:'u5', username:'rex_b',   password:'pass123',  display:'Rex Brown',           role:'employee' },
-];
-
-const TASKS = [
-  { id:'t1', title:'Morning standup notes',      type:'recurring', due:null,         assignedTo:[] },
-  { id:'t2', title:'Review support tickets',     type:'recurring', due:null,         assignedTo:['u2','u3'] },
-  { id:'t3', title:'Update team spreadsheet',    type:'recurring', due:null,         assignedTo:[] },
-  { id:'t4', title:'Q2 performance review',      type:'one-time',  due:'2026-06-20', assignedTo:[] },
-  { id:'t5', title:'Onboard new contractor',     type:'one-time',  due:'2026-06-15', assignedTo:['u1'] },
-  { id:'t6', title:'Weekly content calendar',    type:'recurring', due:null,         assignedTo:['u2','u4'] },
-  { id:'t7', title:'Community moderation sweep', type:'recurring', due:null,         assignedTo:['u4','u5'] },
-  { id:'t8', title:'Bug report documentation',   type:'one-time',  due:'2026-06-12', assignedTo:['u5'] },
-];
-
-function buildSessions() {
-  const H = 3600000, D = 86400000;
-  const d = new Date(); d.setHours(0,0,0,0);
-  const T = d.getTime();
-  const now = Date.now();
-  const sarahIn = Math.min(T + 8.5*H, now - 30*60000);
-  const lunaIn  = Math.min(T + 10*H,  now - 20*60000);
-  return [
-    { id:'s1',  userId:'u2', clockIn:T-6*D+8.5*H, clockOut:T-6*D+17.5*H },
-    { id:'s2',  userId:'u2', clockIn:T-5*D+8*H,   clockOut:T-5*D+17*H },
-    { id:'s3',  userId:'u2', clockIn:T-4*D+8.5*H, clockOut:T-4*D+17*H },
-    { id:'s4',  userId:'u2', clockIn:T-3*D+9*H,   clockOut:T-3*D+18*H },
-    { id:'s5',  userId:'u2', clockIn:T-2*D+8*H,   clockOut:T-2*D+17*H },
-    { id:'s6',  userId:'u2', clockIn:T-1*D+8.5*H, clockOut:T-1*D+17.5*H },
-    { id:'s7',  userId:'u2', clockIn:sarahIn,      clockOut:null },
-    { id:'s8',  userId:'u3', clockIn:T-6*D+9*H,   clockOut:T-6*D+18*H },
-    { id:'s9',  userId:'u3', clockIn:T-5*D+9*H,   clockOut:T-5*D+18*H },
-    { id:'s10', userId:'u3', clockIn:T-4*D+9*H,   clockOut:T-4*D+17.5*H },
-    { id:'s11', userId:'u3', clockIn:T-3*D+9*H,   clockOut:T-3*D+18*H },
-    { id:'s12', userId:'u3', clockIn:T-2*D+9*H,   clockOut:T-2*D+18*H },
-    { id:'s13', userId:'u3', clockIn:T-1*D+9*H,   clockOut:T-1*D+18*H },
-    { id:'s14', userId:'u4', clockIn:T-6*D+10*H,  clockOut:T-6*D+19*H },
-    { id:'s15', userId:'u4', clockIn:T-4*D+10*H,  clockOut:T-4*D+19*H },
-    { id:'s16', userId:'u4', clockIn:T-2*D+10*H,  clockOut:T-2*D+19*H },
-    { id:'s17', userId:'u4', clockIn:lunaIn,       clockOut:null },
-    { id:'s18', userId:'u5', clockIn:T-6*D+8*H,   clockOut:T-6*D+16*H },
-    { id:'s19', userId:'u5', clockIn:T-5*D+8*H,   clockOut:T-5*D+16*H },
-    { id:'s20', userId:'u5', clockIn:T-4*D+8*H,   clockOut:T-4*D+16*H },
-    { id:'s21', userId:'u5', clockIn:T-3*D+8*H,   clockOut:T-3*D+16*H },
-    { id:'s22', userId:'u5', clockIn:T-2*D+8*H,   clockOut:T-2*D+16*H },
-    { id:'s23', userId:'u5', clockIn:T-1*D+8*H,   clockOut:T-1*D+16*H },
-    { id:'s24', userId:'u1', clockIn:T-6*D+9*H,   clockOut:T-6*D+18*H },
-    { id:'s25', userId:'u1', clockIn:T-5*D+9*H,   clockOut:T-5*D+17*H },
-    { id:'s26', userId:'u1', clockIn:T-4*D+9*H,   clockOut:T-4*D+18*H },
-    { id:'s27', userId:'u1', clockIn:T-3*D+9*H,   clockOut:T-3*D+17.5*H },
-    { id:'s28', userId:'u1', clockIn:T-2*D+9*H,   clockOut:T-2*D+17*H },
-    { id:'s29', userId:'u1', clockIn:T-1*D+9*H,   clockOut:T-1*D+18*H },
-  ];
-}
-
-function buildLog(sessions) {
-  const lines = [];
-  const sorted = [...sessions].filter(s => s.clockOut).sort((a,b) => b.clockOut - a.clockOut).slice(0,20);
-  for (const s of sorted) {
-    const u = USERS.find(u => u.id === s.userId);
-    if (!u) continue;
-    lines.push({ time:s.clockOut, msg:'clocked out after '+fmtDur(s.clockOut-s.clockIn), who:u.display });
-    lines.push({ time:s.clockIn,  msg:'clocked in', who:u.display });
+  function showPage(page) {
+    document.getElementById('portfolio-page').classList.remove('active');
+    document.getElementById('resume-page').classList.remove('active');
+    document.getElementById(page + '-page').classList.add('active');
+    window.scrollTo(0, 0);
   }
-  return lines.sort((a,b) => b.time - a.time).slice(0,30);
-}
-
-let cur = null, state = null, _tick = null;
-
-function loadState() {
-  const raw = localStorage.getItem('cis_v2');
-  if (raw) return JSON.parse(raw);
-  const sessions = buildSessions();
-  const s = { sessions, completions:{}, log:buildLog(sessions), nid:100 };
-  localStorage.setItem('cis_v2', JSON.stringify(s));
-  return s;
-}
-function save() { localStorage.setItem('cis_v2', JSON.stringify(state)); }
-
-function fill(u, p) {
-  document.getElementById('li-user').value = u;
-  document.getElementById('li-pass').value = p;
-}
-
-function doLogin() {
-  const u = document.getElementById('li-user').value.trim();
-  const p = document.getElementById('li-pass').value;
-  const user = USERS.find(x => x.username===u && x.password===p);
-  if (!user) { document.getElementById('login-err').style.display='block'; return; }
-  document.getElementById('login-err').style.display = 'none';
-  cur = user; state = loadState();
-  document.getElementById('login-screen').style.display = 'none';
-  const app = document.getElementById('app');
-  app.style.display = 'flex';
-  document.getElementById('tb-name').textContent = cur.display;
-  const rp = document.getElementById('tb-role');
-  rp.textContent = cur.role.toUpperCase(); rp.className = 'tb-role-pill '+cur.role;
-  if (cur.role==='admin') document.getElementById('tabbtn-admin').style.display='flex';
-  _tick = setInterval(tick, 1000); tick();
-  switchTab('clock');
-}
-
-function signOut() {
-  clearInterval(_tick); cur=null; state=null;
-  document.getElementById('app').style.display='none';
-  document.getElementById('login-screen').style.display='flex';
-  document.getElementById('li-user').value='';
-  document.getElementById('li-pass').value='';
-  document.getElementById('tabbtn-admin').style.display='none';
-}
-
-function switchTab(name) {
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
-  document.getElementById('tabbtn-'+name).classList.add('active');
-  document.getElementById('pane-'+name).classList.add('active');
-  if (name==='clock')    renderClock();
-  if (name==='tasks')    renderTasks();
-  if (name==='schedule') renderSchedule();
-  if (name==='admin')    renderAdmin();
-}
-
-function tick() {
-  const now = new Date();
-  const t = now.toLocaleTimeString('en-GB');
-  document.getElementById('tb-clock').textContent = t;
-  document.getElementById('live-clock').textContent = t;
-  document.getElementById('live-date').textContent = now.toLocaleDateString('en-GB',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  const open = openSess();
-  if (open) document.getElementById('timer').textContent = fmtMs(Date.now()-open.clockIn);
-}
-
-function openSess() { return state.sessions.find(s=>s.userId===cur.id&&!s.clockOut)||null; }
-
-function renderClock() {
-  const open = openSess();
-  const dot=document.getElementById('status-dot'), lbl=document.getElementById('status-label');
-  const sub=document.getElementById('timer-sub'), btn=document.getElementById('clock-btn');
-  if (open) {
-    dot.className='dot in'; lbl.textContent='Clocked In';
-    document.getElementById('timer').textContent = fmtMs(Date.now()-open.clockIn);
-    sub.textContent='Session started '+new Date(open.clockIn).toLocaleTimeString('en-GB');
-    btn.textContent='Clock Out'; btn.className='clock-btn out';
-  } else {
-    dot.className='dot out'; lbl.textContent='Clocked Out';
-    document.getElementById('timer').textContent='00:00:00';
-    sub.textContent='Press below to start your shift';
-    btn.textContent='Clock In'; btn.className='clock-btn in';
-  }
-  const d=new Date(); d.setHours(0,0,0,0);
-  const ws=d.getTime()-((d.getDay()||7)-1)*86400000;
-  const my=state.sessions.filter(s=>s.userId===cur.id&&s.clockIn>=ws);
-  const comp=my.filter(s=>s.clockOut);
-  const totMs=comp.reduce((a,s)=>a+(s.clockOut-s.clockIn),0);
-  document.getElementById('week-stats').innerHTML=`
-    <div class="stat-row"><span>Sessions this week</span><span class="stat-val">${my.length}</span></div>
-    <div class="stat-row"><span>Total hours</span><span class="stat-val">${fmtDur(totMs)}</span></div>
-    <div class="stat-row"><span>Average per shift</span><span class="stat-val">${comp.length?fmtDur(totMs/comp.length):'—'}</span></div>
-    <div class="stat-row"><span>Today</span><span class="stat-val" style="color:${open?'var(--green)':'var(--muted)'}">${open?'Active':'Offline'}</span></div>`;
-  const hist=state.sessions.filter(s=>s.userId===cur.id&&s.clockOut).sort((a,b)=>b.clockIn-a.clockIn).slice(0,8);
-  const hl=document.getElementById('history-list');
-  hl.innerHTML=hist.length?hist.map(s=>`
-    <div class="history-row">
-      <span class="history-date">${fmtDate(s.clockIn)} &nbsp;${new Date(s.clockIn).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})} – ${new Date(s.clockOut).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</span>
-      <span class="history-dur">${fmtDur(s.clockOut-s.clockIn)}</span>
-    </div>`).join(''):'<div class="empty-msg">No sessions yet.</div>';
-}
-
-function toggleClock() {
-  const open=openSess(), now=Date.now();
-  if (open) {
-    open.clockOut=now;
-    state.log.unshift({time:now,msg:'clocked out',who:cur.display});
-  } else {
-    state.sessions.push({id:'s'+(++state.nid),userId:cur.id,clockIn:now,clockOut:null});
-    state.log.unshift({time:now,msg:'clocked in',who:cur.display});
-  }
-  save(); renderClock();
-}
-
-function renderTasks() {
-  const vis=TASKS.filter(t=>t.assignedTo.length===0||t.assignedTo.includes(cur.id));
-  const tod=new Date().toISOString().slice(0,10);
-  document.getElementById('task-list').innerHTML=vis.length?vis.map(t=>{
-    const done=!!(state.completions[cur.id]&&state.completions[cur.id][t.id]);
-    const tags=[];
-    if(t.type==='recurring') tags.push({c:'',l:'recurring'});
-    if(t.due){
-      const diff=(new Date(t.due)-new Date(tod))/86400000;
-      if(diff<0) tags.push({c:'overdue',l:'overdue'});
-      else if(diff<=3) tags.push({c:'upcoming',l:'due '+t.due});
-      else tags.push({c:'',l:'due '+t.due});
-    }
-    if(t.assignedTo.length){
-      const names=t.assignedTo.map(id=>USERS.find(u=>u.id===id)?.display.split(' ')[0]).filter(Boolean);
-      tags.push({c:'assigned',l:names.join(', ')});
-    }
-    return `<div class="task-item">
-      <div class="chk ${done?'done':''}" onclick="toggleTask('${t.id}')">${done?'✓':''}</div>
-      <div class="task-body">
-        <div class="task-title ${done?'done':''}">${t.title}</div>
-        <div class="task-tags">${tags.map(tg=>`<span class="tag ${tg.c}">${tg.l}</span>`).join('')}</div>
-      </div></div>`;
-  }).join(''):'<div class="empty-msg">No tasks assigned.</div>';
-}
-
-function toggleTask(tid) {
-  if(!state.completions[cur.id]) state.completions[cur.id]={};
-  if(state.completions[cur.id][tid]) delete state.completions[cur.id][tid];
-  else state.completions[cur.id][tid]=true;
-  save(); renderTasks();
-}
-
-function renderSchedule() {
-  const today=new Date(); today.setHours(0,0,0,0);
-  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  let s='';
-  for(let i=-3;i<=3;i++){
-    const d=new Date(today); d.setDate(d.getDate()+i);
-    const hasTasks=TASKS.some(t=>t.due===d.toISOString().slice(0,10));
-    s+=`<div class="day-cell${i===0?' today':''}">
-      <div class="day-name">${days[d.getDay()]}</div>
-      <div class="day-num">${d.getDate()}</div>
-      ${hasTasks?'<div class="day-dot"></div>':''}
-    </div>`;
-  }
-  document.getElementById('week-strip').innerHTML=s;
-  const myTasks=TASKS.filter(t=>t.assignedTo.length===0||t.assignedTo.includes(cur.id));
-  const tod=today.toISOString().slice(0,10);
-  const overdue=myTasks.filter(t=>t.due&&t.due<tod);
-  const upcoming=myTasks.filter(t=>t.due&&t.due>=tod).sort((a,b)=>a.due.localeCompare(b.due));
-  const recur=myTasks.filter(t=>!t.due);
-  let body='';
-  if(overdue.length){
-    body+=`<div class="sched-block"><div class="sched-block-label">Overdue</div>`;
-    body+=overdue.map(t=>`<div class="sched-task"><div class="sched-dot" style="background:var(--red)"></div>${t.title}<span style="margin-left:auto;font-size:0.75rem;color:var(--red)">${t.due}</span></div>`).join('');
-    body+='</div>';
-  }
-  if(upcoming.length){
-    body+=`<div class="sched-block"><div class="sched-block-label">Upcoming</div>`;
-    body+=upcoming.map(t=>`<div class="sched-task"><div class="sched-dot" style="background:var(--accent)"></div>${t.title}<span style="margin-left:auto;font-size:0.75rem;color:var(--muted)">${t.due}</span></div>`).join('');
-    body+='</div>';
-  }
-  if(recur.length){
-    body+=`<div class="sched-block"><div class="sched-block-label">Recurring Daily</div>`;
-    body+=recur.map(t=>`<div class="sched-task"><div class="sched-dot" style="background:var(--accent2)"></div>${t.title}</div>`).join('');
-    body+='</div>';
-  }
-  document.getElementById('sched-body').innerHTML=body||'<div class="empty-msg">No tasks.</div>';
-}
-
-function renderAdmin() {
-  const d=new Date(); d.setHours(0,0,0,0);
-  const wkStart=d.getTime()-((d.getDay()||7)-1)*86400000;
-  document.getElementById('emp-grid').innerHTML=USERS.filter(u=>u.role==='employee').map(u=>{
-    const open=state.sessions.find(s=>s.userId===u.id&&!s.clockOut);
-    const wk=state.sessions.filter(s=>s.userId===u.id&&s.clockIn>=wkStart);
-    const tot=wk.filter(s=>s.clockOut).reduce((a,s)=>a+(s.clockOut-s.clockIn),0);
-    return `<div class="emp-card">
-      <div class="emp-name">${u.display}</div>
-      <div class="emp-user">@${u.username}</div>
-      <span class="status-pill ${open?'in':'out'}">
-        <span class="dot ${open?'in':'out'}" style="width:6px;height:6px;margin-right:2px"></span>
-        ${open?'Clocked In':'Clocked Out'}
-      </span>
-      <div class="emp-hours">${fmtDur(tot)} this week &middot; ${wk.length} sessions</div>
-    </div>`;
-  }).join('');
-
-  document.getElementById('payroll-body').innerHTML=USERS.filter(u=>u.role==='employee').map(u=>{
-    const wk=state.sessions.filter(s=>s.userId===u.id&&s.clockIn>=wkStart);
-    const hrs=wk.filter(s=>s.clockOut).reduce((a,s)=>a+(s.clockOut-s.clockIn),0);
-    const open=wk.some(s=>!s.clockOut);
-    return `<tr><td>${u.display}</td><td style="font-family:monospace">${fmtDur(hrs)}</td><td style="font-family:monospace">${wk.length}</td>
-      <td><span class="status-pill ${open?'in':'out'}" style="font-size:0.72rem">${open?'Active':'Offline'}</span></td></tr>`;
-  }).join('');
-
-  document.getElementById('users-body').innerHTML=USERS.map(u=>{
-    const all=state.sessions.filter(s=>s.userId===u.id);
-    return `<tr><td>${u.display}</td><td style="font-family:monospace">@${u.username}</td>
-      <td><span class="role-pill ${u.role}">${u.role}</span></td>
-      <td style="font-family:monospace">${all.length} session${all.length!==1?'s':''}</td></tr>`;
-  }).join('');
-
-  document.getElementById('log-list').innerHTML=state.log.length
-    ?state.log.slice(0,30).map(l=>`
-      <div class="log-row">
-        <span class="log-time">${new Date(l.time).toLocaleDateString('en-GB',{month:'short',day:'numeric'})} ${new Date(l.time).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</span>
-        <span class="log-msg"><span class="log-who">${l.who}</span> ${l.msg}</span>
-      </div>`).join('')
-    :'<div class="empty-msg">No activity yet.</div>';
-}
-
-function fmtMs(ms){
-  const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60;
-  return [h,m,sc].map(n=>String(n).padStart(2,'0')).join(':');
-}
-function fmtDur(ms){
-  const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000);
-  return h?`${h}h ${m}m`:`${m}m`;
-}
-function fmtDate(ts){
-  return new Date(ts).toLocaleDateString('en-GB',{month:'short',day:'numeric'});
-}
 </script>
+
 </body>
 </html>
